@@ -1,0 +1,91 @@
+
+
+require('dotenv').config()
+const express  = require('express')
+import { Telegraf } from 'telegraf'
+import createPaymentLink from './services/flutterwave'
+import * as mongoose from 'mongoose'
+
+
+const token = process.env.BOT_TOKEN
+
+if (token === undefined) {
+    throw new Error('BOT_TOKEN must be provided!')
+}
+const bot = new Telegraf(token)
+const app = express()
+
+const connectDB = async () => {
+    try {
+        const conn = await mongoose.connect(process.env.MONGO_URI, {
+        });
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
+    } catch (err) {
+        console.log(`Error: ${err.message}`);
+        process.exit(1);
+    }
+}
+
+
+connectDB()
+
+
+/* app.use(bot.webhookCallback('/secret-path'))
+bot.telegram.setWebhook('https://server.tld:8443/secret-path')
+
+app.get('/', (req, res) => {
+    res.send('Hello World!')
+  })
+ */
+const main_rquest = {
+    reply_markup: {
+        inline_keyboard: [
+            [{
+                text: "Fund wallet",
+                callback_data: 'fund'
+            },
+            {
+                text: "View trasaction history",
+                callback_data: 'history'
+            }
+            ],
+        ]
+    }
+}
+
+
+
+
+
+bot.action('fund', async (ctx) => {
+    let _id = ctx.chat.id
+    const { data } = await createPaymentLink({ id: _id, name: 'sam' }, bot)
+    bot.telegram.sendMessage(_id, `fund : ${_id} `)
+    console.log(data.link)
+    console.log("here")
+
+})
+
+
+bot.action('history', ctx => {
+    let _id = ctx.chat.id
+    bot.telegram.sendMessage(_id, `history : ${_id}`)
+
+})
+
+
+bot.command('start', ctx => {
+    console.log(ctx.from)
+    let Question = `What would you like to do ? `
+    bot.telegram.sendMessage(ctx.chat.id, 'hello there! Welcome to your seamless P2P payment telegram bot.', {
+    })
+    bot.telegram.sendMessage(ctx.chat.id, Question, main_rquest)
+})
+
+
+/* app.listen(3000, () => {
+    console.log('Example app listening on port 3000!')
+  }) */
+
+
+  bot.launch()
