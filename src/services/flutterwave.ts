@@ -1,38 +1,55 @@
 import axios from 'axios'
-import { v4 as uuidv4 } from 'uuid';
+const { MERCHANT_TITLE, MERCHANT_DESCRIPTION, MERCHANT_LOGO } = process.env
+
+const ACCEPTED_CURRENCY = "NGN"
 
 
-interface User {
-    name: string;
-    id: number;
+export const validatePayment = async (transactionId, expectedAmount, expectedReference) => {
+    const URL = `'https://api.flutterwave.com/v3/transactions/${transactionId}/verify`
+    try {
+        const { data } = await axios.get(URL, {
+            headers: {
+                'Authorization': `Bearer ${process.env.FlK_PRIVATE}`
+            }
+        })
+        const { currency, tx_ref, amount } = data.data
+        if (data.status = "success" &&
+            currency == ACCEPTED_CURRENCY &&
+            tx_ref == expectedReference &&
+            amount >= expectedAmount) {
+
+            console.log("valid payment")
+            return true
+        }
+        return false
+    } catch (e) {
+        console.log(e.message)
+    }
 }
 
-
-const createPaymentLink = async function (/*user: User,*/)  {
+export const createPaymentLink = async function (payload) {
+    const { tx_ref, amount, email, name } = payload;
     console.log("payment started")
-    const tx_ref =  uuidv4();
     const URL = 'https://api.flutterwave.com/v3/payments'
     const dataSent = {
         tx_ref,
-        "amount":"100",
-        "currency":"NGN",
-       "redirect_url":"https://webhook.site/e8e9a64a-f227-4c8b-9b17-81b4a1534bc7",
-        "payment_options":"card",
-        "meta":{
-           "consumer_id":23,
-           "consumer_mac":"92a3-912ba-1192a"
+        amount,
+        currency: "NGN",
+        redirect_url: "google.com",
+        payment_options: "card",
+        meta: {
+            "consumer_id": 23,
         },
-        "customer":{
-           "email":"user@gmail.com",
-           "phonenumber":"080****4528",
-           "name":"Yemi Desola"
+        customer: {
+            email,
+            name
         },
-        "customizations":{
-           "title":"Pied Piper Payments",
-           "description":"Middleout isn't free. Pay the price",
-           "logo":"https://assets.piedpiper.com/logo.png"
+        customizations: {
+            title: MERCHANT_TITLE,
+            description: MERCHANT_DESCRIPTION,
+            logo: MERCHANT_LOGO
         }
-     }
+    }
 
     try {
         const { data } = await axios.post(URL, dataSent, {
@@ -40,11 +57,12 @@ const createPaymentLink = async function (/*user: User,*/)  {
                 'Authorization': `Bearer ${process.env.FlK_PRIVATE}`
             }
         })
-        console.log(data)
-        return data
+        const { link } = data.data
+        return link
     } catch (e) {
         console.log(e.message)
     }
 }
 
-export default createPaymentLink
+
+

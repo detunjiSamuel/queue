@@ -25,6 +25,7 @@
     "express": "^4.17.1",
     "faunadb": "^4.4.1",
     "mongoose": "^6.0.7",
+    "morgan": "^1.10.0",
     "node-binance-api": "^0.13.1",
     "telegraf": "^4.4.2",
     "uuid": "^8.3.2"
