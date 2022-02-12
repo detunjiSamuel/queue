@@ -5,13 +5,15 @@ const ACCEPTED_CURRENCY = "NGN"
 
 
 export const validatePayment = async (transactionId, expectedAmount, expectedReference) => {
-    const URL = `'https://api.flutterwave.com/v3/transactions/${transactionId}/verify`
+    console.log("validation began")
+    const URL = `https://api.flutterwave.com/v3/transactions/${transactionId}/verify`
     try {
         const { data } = await axios.get(URL, {
             headers: {
                 'Authorization': `Bearer ${process.env.FlK_PRIVATE}`
             }
         })
+        console.log(data);
         const { currency, tx_ref, amount } = data.data
         if (data.status = "success" &&
             currency == ACCEPTED_CURRENCY &&
@@ -23,7 +25,7 @@ export const validatePayment = async (transactionId, expectedAmount, expectedRef
         }
         return false
     } catch (e) {
-        console.log(e.message)
+        console.log(e)
     }
 }
 
