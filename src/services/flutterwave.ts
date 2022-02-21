@@ -13,19 +13,22 @@ export const validatePayment = async (transactionId, expectedAmount, expectedRef
                 'Authorization': `Bearer ${process.env.FlK_PRIVATE}`
             }
         })
-        console.log(data);
-        const { currency, tx_ref, amount } = data.data
-        if (data.status = "success" &&
-            currency == ACCEPTED_CURRENCY &&
-            tx_ref == expectedReference &&
-            amount >= expectedAmount) {
+        if (data) {
+            const { currency, tx_ref, amount } = data.data
+            if (data.status = "success" &&
+                currency == ACCEPTED_CURRENCY &&
+                tx_ref == expectedReference &&
+                amount >= expectedAmount) {
 
-            console.log("valid payment")
-            return true
+                console.log("valid payment")
+                return true
+            }
         }
+
         return false
     } catch (e) {
-        console.log(e)
+        console.log(e.message)
+        return false
     }
 }
 
