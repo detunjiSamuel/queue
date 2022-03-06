@@ -1,6 +1,4 @@
-
 import * as mongoose from 'mongoose'
-
 const depositRequestSchema = new mongoose.Schema({
     email: {
         type: String
@@ -8,7 +6,6 @@ const depositRequestSchema = new mongoose.Schema({
     name: {
         type: String
     },
-
     tx_ref: {
         type: String,
     },
@@ -35,6 +32,5 @@ const depositRequestSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
-});
+}, { timestamps: true });
 export default mongoose.model('depositRequest', depositRequestSchema);
-

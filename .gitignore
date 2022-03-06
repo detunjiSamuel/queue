@@ -2,3 +2,8 @@
 node_modules
 built
 build
+
+# dev files & obsolete
+src/indes.copy.ts
+src/server
+src/utils/fwTest.js

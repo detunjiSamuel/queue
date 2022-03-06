@@ -1,45 +1,61 @@
+import { Router, Request, Response, NextFunction } from 'express'
+import * as webhookController from '../controllers/webhook.controller'
 
-import { Router } from 'express'
-import { processWebHook, processCoinRequest } from '../handler';
-import { fakeFunding } from '../mocks';
+import { checkFundWallet } from '../validator'
+import * as authValidator from '../validator/auth'
+import * as authContoller from '../controllers/auth.controller'
 
+import * as cardContoller from '../controllers/card.controller'
+import * as coinContoller from '../controllers/coin.controller';
+
+import { isAuthenticated } from '../middleware'
+import { handleValidation } from '../utils'
 
 const router = Router()
+
+
 
 router.get('/', async (req, res) => {
     res.status(200).json({ message: 'Welcome to fundwallet API v1' });
 })
 
+
+
+router.post('/user/register', authValidator.checkRegister(), handleValidation, authContoller.register);
+
+router.post('/user/login', authValidator.checkLogin(), handleValidation, authContoller.login);
+router.post('/user/logout', isAuthenticated, authContoller.logout);
+
+
+router.post('/email/resendverification', authValidator.checkEmail(), handleValidation, authContoller.resendEmailVerification);
+router.get('/email/verify/:token', authValidator.checkToken(), handleValidation, authContoller.verifyEmail);
+
+
+// savings route first
+
+
+
+// cards
+router.post('/card', isAuthenticated, cardContoller.addCard)
+router.post('/card/:tx_ref/validate', isAuthenticated, cardContoller.validateCardOtp)
+
+
+
+
+
+
+
+
+
+router.post('/n/fund-wallet', checkFundWallet(), handleValidation, coinContoller.fundRequest)
+
+router.post('/flutterwave-webhook', webhookController.flutterwave)
+
+
 router.get('/payment-redirect', async (req, res) => {
     console.log('payment-redirect')
     const { tx_ref, transaction_id, status } = req.query
     res.send("ok")
-})
-
-router.get('/fund', async (req, res) => {
-    console.log("fund test")
-    const link = await processCoinRequest(fakeFunding)
-    res.redirect(link)
-
-})
-
-router.post('/fund', async (req, res) => {
-    console.log("test")
-    const { data } = req.body
-    processCoinRequest(fakeFunding)
-    return res.send("ok")
-})
-
-router.post('/flutterwave-webhook', async (req, res) => {
-    console.log("flutterwave dialup")
-    const hash = req.headers["verif-hash"]
-    const secret_hash = process.env.FLK_HASH
-    if (!hash || hash == secret_hash)
-        return res.end()
-    const { data } = req.body
-    processWebHook(data) // don't wait intentional
-    res.end()
-
 })
 
 

@@ -1,40 +1,13 @@
-require('dotenv').config()
-import * as express from 'express'
-import * as morgan from 'morgan'
-import * as mongoose from 'mongoose'
+import app from './app'
+import config from './config'
 
-import router from "./routes"
-import depositRequest from './models/depositRequest'
-import transactions from './models/transactions'
+import startDb from './config/database'
 
-//for testing
-import { getCoinInfo, getUserInfo, validateAddress } from './services/binance'
-const app = express()
+require('./config/bull')
 
+startDb()
 
-app.use(morgan('dev'))
-app.use(express.json());
-
-
-
-
-
-app.use('/api/v1', router);
-
-
-
-mongoose.connect(process.env.MONGODB_URL, async () => {
-    console.log("db started")
-
-
-  console.log(await transactions.find())
-})
-
-app.listen(process.env.PORT || 5000, async () => {
-    console.log('🚀 app running on port', process.env.PORT || 5000)
+app.listen(config.port, async () => {
+  console.log(`🚀 app running on port  ${config.port}`)
 
 })
-// fund
-// flutterwave-hook
-// request personal transaction history
-// history --secret

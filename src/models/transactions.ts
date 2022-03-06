@@ -1,7 +1,4 @@
-
 import * as mongoose from 'mongoose'
-
-
 const cardSchema = new mongoose.Schema({
     first_6digits: String,
     last_4digits: String,
@@ -10,7 +7,6 @@ const cardSchema = new mongoose.Schema({
     type: String,
     expiry: String
 })
-
 const transactionSchema = new mongoose.Schema({
     id: {
         type: String,
@@ -40,6 +36,8 @@ const transactionSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
-    }
-});
+    },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+
+}, { timestamps: true });
 export default mongoose.model('transaction', transactionSchema);
