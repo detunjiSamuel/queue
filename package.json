@@ -7,6 +7,7 @@
     "test": "jest",
     "ind": "ts-node",
     "start:dev": "nodemon",
+    "tsc": "./node_modules/typescript/bin/tsc",
     "build": "rimraf ./build && tsc",
     "start": "npm run build && node build/index.js"
   },
