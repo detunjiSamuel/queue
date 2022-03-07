@@ -4,14 +4,18 @@ import Flutterwave from 'flutterwave-node-v3'
 import AuthService from '../services/auth.service'
 
 import redisClient from '../config/redis'
+import Card from '../models/card.model'
 
 import config from '../config/index'
+import { chargeQueue } from '../config/bull'
 
 const { flutterwave } = config
+
 
 const flw = new Flutterwave(flutterwave.public, flutterwave.private);
 const cache = new redisClient()
 const { createToken, verifyToken } = new AuthService()
+
 
 //TODO add encryption key to share private data 
 export const addCard = async (req: Request, res: Response) => {
@@ -27,7 +31,6 @@ export const addCard = async (req: Request, res: Response) => {
     })
     try {
         const response = await flw.Charge.card(payload)
-        console.log(response)
         if (response.status == 'error' || response.status.includes('fail'))
             throw new Error('This card cannot be accepted')
 
@@ -85,6 +88,95 @@ export const addCard = async (req: Request, res: Response) => {
 
 }
 
+export const removeCard = async (req: Request, res: Response) => {
+
+    const { user } = req.body
+    const { id } = req.params
+    try {
+        const ownsCard = await Card.findOne({
+            user: user.id,
+            _id: id
+        })
+        if (!ownsCard)
+            return res.status(400).json({
+                msg: 'This Card does not belong to you',
+            })
+        await Card.deleteOne({
+            _id: id
+        })
+        return res.status(200).json({
+            msg: "Delete successful"
+        })
+
+    } catch (e) {
+        console.log(e.message)
+        return res.status(500).json({ msg: 'failed to add card', route: "/card" })
+    }
+}
+
+export const chargeCard = async (req: Request, res: Response) => {
+    const { amount, user } = req.body
+    const { id } = req.params
+    try {
+        const ownsCard = await Card.findOne({
+            user: user.id,
+            _id: id
+        })
+        if (!ownsCard)
+            return res.status(400).json({
+                msg: 'This Card does not belong to you',
+            })
+        const tx_ref = `charge_${nanoid()}`
+        const payload = {
+            tx_ref,
+            email: user.email,
+            amount,
+            action: 'CHARGE_CARD'
+        }
+        const internalReferenceToken = await createToken(payload)
+        await cache.add(tx_ref, internalReferenceToken)
+        await chargeQueue.add({
+            payload: {
+                ...payload,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                narration: 'CHARGE_CARD',
+                redirect_url: "https://www.google.com",
+                currency: "NGN",
+                country: "NG",
+                token: ownsCard.token
+            }
+        })
+        return res.status(200).json({
+            msg: "Card charge in  progress"
+        })
+    }
+    catch (e) {
+        console.log(e.message)
+        return res.status(500).json({ msg: 'failed to add card', route: "/card" })
+    }
+}
+
+
+export const getCard = async (req: Request, res: Response) => {
+    const { user } = req.body
+    try {
+        const cards = await Card.find({
+            user: user.id
+        })
+        if (cards)
+            return res.status(200).json({
+                cards
+            })
+        return res.status(200).json({
+            msg: "No card is attached to this user"
+        })
+
+    } catch {
+        return res.status(500).json({ msg: 'Something went wrong', route: "/card" })
+    }
+}
+
 export const validateCardOtp = async (req: Request, res: Response) => {
     const { otp } = req.body
     const { tx_ref } = req.params
@@ -109,7 +201,7 @@ export const validateCardOtp = async (req: Request, res: Response) => {
 
 
 
-function generatePayload(data) {
+function generatePayload(data: any) {
     if (data.pin)
         data.authorization = {
             "mode": "pin",
@@ -128,48 +220,10 @@ function generatePayload(data) {
         ...data,
         redirect_url: "https://www.google.com",
         enckey: flutterwave.encrypt,
-        phone_number: "0902620185",
+        phone_number: "0902620185",// i dont collect numbers so will use this one
         currency: "NGN",
         amount: "100",
     }
 }
 
 
-// const chargeCard = async () => {
-//     try {
-//         const payload = ''
-//         const response = await flw.Charge.card(payload)
-//         console.log(response)
-//         // check for if status is not success || error
-//         if (response.meta.authorization.mode === 'pin') {
-//             let payload2 = payload
-//             payload2.authorization = {
-//                 "mode": "pin",
-//                 "fields": [
-//                     "pin"
-//                 ],
-//                 "pin": 3310
-//             }
-//             const reCallCharge = await flw.Charge.card(payload2)
-//             console.log(reCallCharge)
-
-//             const callValidate = await flw.Charge.validate({
-//                 "otp": "12345",
-//                 "flw_ref": reCallCharge.data.flw_ref
-//             })
-//             console.log(callValidate)
-
-//         }
-//         if (response.meta.authorization.mode === 'redirect') {
-
-//             var url = response.meta.authorization.redirect
-//             open(url)
-//         }
-
-//         console.log(response)
-
-
-//     } catch (error) {
-//         console.log(error)
-//     }
-// }

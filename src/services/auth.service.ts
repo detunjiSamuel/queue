@@ -1,5 +1,5 @@
 import { emailQueue } from '../config/bull'
-import emailVerification from '../models/emailVerification'
+import emailVerification from '../models/emailVerification.model'
 import { sign, verify } from 'jsonwebtoken';
 import { nanoid } from 'nanoid'
 import config from '../config'

@@ -8,3 +8,4 @@ export default async () => {
         // run seed
     })
 }
+

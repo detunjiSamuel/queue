@@ -13,9 +13,9 @@ const config = {
     },
     databaseUrl: process.env.MONGODB_URL,
     merchant: {
-        title: process.env.MERCHANT_TITLE,
-        description: process.env.MERCHANT_DESCRIPTION,
-        logo: process.env.MERCHANT_LOGO
+        title: process.env.MERCHANT_TITLE || 'ONE SHOT ITACHI' ,
+        description: process.env.MERCHANT_DESCRIPTION || 'THE MOST HAXED CHARACTER',
+        logo: process.env.MERCHANT_LOGO || "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Mangekyou_Sharingan_Itachi.svg/300px-Mangekyou_Sharingan_Itachi.svg.png"
     },
     port: process.env.PORT || 5000,
     host: process.env.HOST || 'http://localhost:5000',

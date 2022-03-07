@@ -9,7 +9,7 @@ import router from "./routes"
 
 const app = express()
 
-
+// setup all middleware
 app.use(compression());
 
 app.use(morgan('dev'))
@@ -19,13 +19,13 @@ app.use(helmet());
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }))
+
 app.use('/api/v1', router);
+
+//wildcard
+app.use('*', (req, res) => {
+    res.redirect('https://documenter.getpostman.com/view/10688183/UVsEUoTN')
+})
 
 
 export default app
-
-//TODO
-// fund
-// flutterwave-hook
-// request personal transaction history
-// history --secret

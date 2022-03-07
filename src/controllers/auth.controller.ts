@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
-import User from '../models/user'
-import emailVerification from '../models/emailVerification'
+import User from '../models/user.model'
+import emailVerification from '../models/emailVerification.model'
 import authService from '../services/auth.service'
 import redisClient from '../config/redis'
 

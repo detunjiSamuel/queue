@@ -1,6 +1,7 @@
 import { body } from 'express-validator'
 
-export const checkFundWallet = () => {
+
+export const checkCoinRequest = () => {
     return [
         body('fullname').notEmpty().withMessage('Please, provide a name'),
         body('email').notEmpty().isEmail().withMessage('Please, provide a valid email'),

@@ -3,8 +3,9 @@ import Redis from 'ioredis'
 import config from '.'
 const { url } = config.redis
 
-import { emailQueueHandler } from '../services/email';
+import { emailQueueHandler } from '../services/email.service';
 import { flwWebHookQueueHandler } from '../services/webhook.service';
+import { chargeQueueHandler } from '../services/card.service'
 
 // https://github.com/OptimalBits/bull/blob/master/PATTERNS.md#reusing-redis-connections
 
@@ -39,13 +40,24 @@ client.on('ready', () => {
 
 export const emailQueue = new Queue('sendEmail', opts)
 export const flwWebHookQueue = new Queue('Flw_webHook', opts)
+export const chargeQueue = new Queue('charge_card', opts)
 
-export const testQueue = new Queue('test', opts)
+
 
 emailQueue.process(emailQueueHandler);
 flwWebHookQueue.process(flwWebHookQueueHandler);
+chargeQueue.process(chargeQueueHandler)
 
 
+
+
+export const dailyCronQueue = new Queue('dcron', opts)
+export const weeklyCronQueue = new Queue('wcron', opts)
+export const monthlyCronQueue = new Queue('mcron', opts)
+
+require('../jobs/index')
+
+export const testQueue = new Queue('test', opts)
 
 
 
@@ -54,6 +66,8 @@ testQueue.process(function (job, done) {
     done();
 });;
 
+
+// testQueue.add({ msg: 'bar' })
 
 // https://lifesaver.codes/answer/empty-and-clean-jobs
 // Empty queue

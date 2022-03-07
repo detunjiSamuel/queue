@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
-import { createPaymentLink, validatePayment } from '../services/flutterwave'
-import depositRequest from '../models/depositRequest';
-import transactions from '../models/transactions';
-import { validateAddress } from '../services/binance';
+import { createPaymentLink, validatePayment } from '../services/flutterwave.service'
+import depositRequest from '../models/coinRequest.model';
+import transactions from '../models/transaction.model';
+import { validateAddress } from '../services/binance.service';
 import { nanoid } from 'nanoid'
 
 
