@@ -1,6 +1,12 @@
 import Queue from 'bull'
 import Redis from 'ioredis'
 import config from '.'
+
+// https://github.com/OptimalBits/bull/issues/503#issuecomment-338212399
+const EventEmitter = require( "events" );  
+EventEmitter.defaultMaxListeners = Infinity;
+
+
 const { url } = config.redis
 
 import { emailQueueHandler } from '../services/email.service';
@@ -43,7 +49,6 @@ export const flwWebHookQueue = new Queue('Flw_webHook', opts)
 export const chargeQueue = new Queue('charge_card', opts)
 
 
-
 emailQueue.process(emailQueueHandler);
 flwWebHookQueue.process(flwWebHookQueueHandler);
 chargeQueue.process(chargeQueueHandler)
@@ -65,6 +70,7 @@ testQueue.process(function (job, done) {
     console.log("Re", job.data.msg);
     done();
 });;
+
 
 
 // testQueue.add({ msg: 'bar' })
