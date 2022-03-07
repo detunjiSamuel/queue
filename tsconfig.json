@@ -2,8 +2,12 @@
     "compilerOptions": {
       "outDir": "./build",
       "allowJs": true,
-      "target": "es5",
+      "target": "es2015",
       "esModuleInterop": true,
+
+      "module": "commonjs"
+
     },
     "include": ["./src/**/*" , "tests/**/*"]
 }
+
