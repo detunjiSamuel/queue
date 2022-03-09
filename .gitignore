@@ -7,3 +7,7 @@ build
 src/indes.copy.ts
 src/server
 src/utils/fwTest.js
+
+
+
+test/auth.test.ts

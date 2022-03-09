@@ -1,5 +1,5 @@
 import { validateAddress } from "../src/services/binance.service";
-import {testAddress} from '../src/mocks'
+import {testAddress} from '../mocks/index'
 describe('binance tests', () => {
     for (let address in testAddress) {
         test('can identify network of coin', () => {
