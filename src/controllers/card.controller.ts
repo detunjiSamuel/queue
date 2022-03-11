@@ -1,4 +1,4 @@
-import { Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import { nanoid } from 'nanoid'
 import Flutterwave from 'flutterwave-node-v3'
 import AuthService from '../services/auth.service'
@@ -8,6 +8,7 @@ import Card from '../models/card.model'
 
 import config from '../config/index'
 import { chargeQueue } from '../config/bull'
+import httpError from '../utils/error'
 
 const { flutterwave } = config
 
@@ -18,7 +19,7 @@ const { createToken, verifyToken } = new AuthService()
 
 
 //TODO add encryption key to share private data 
-export const addCard = async (req: Request, res: Response) => {
+export const addCard = async (req: Request, res: Response, next: NextFunction) => {
     console.log('add card', 'initiated')
     const { card_number, cvv, expiry_month, expiry_year, user, pin } = req.body
     const payload = generatePayload({
@@ -32,7 +33,7 @@ export const addCard = async (req: Request, res: Response) => {
     try {
         const response = await flw.Charge.card(payload)
         if (response.status == 'error' || response.status.includes('fail'))
-            throw new Error('This card cannot be accepted')
+            throw new httpError(401, 'This card cannot be accepted')
 
         const directive = response.meta.authorization.mode
 
@@ -82,13 +83,13 @@ export const addCard = async (req: Request, res: Response) => {
 
     } catch (e) {
         console.log(e.message)
-        return res.status(500).json({ msg: 'failed to add card', route: "/card" })
+        next(e)
 
     }
 
 }
 
-export const removeCard = async (req: Request, res: Response) => {
+export const removeCard = async (req: Request, res: Response, next: NextFunction) => {
 
     const { user } = req.body
     const { id } = req.params
@@ -98,9 +99,8 @@ export const removeCard = async (req: Request, res: Response) => {
             _id: id
         })
         if (!ownsCard)
-            return res.status(400).json({
-                msg: 'This Card does not belong to you',
-            })
+            throw new httpError(400, 'This Card does not belong to you')
+
         await Card.deleteOne({
             _id: id
         })
@@ -110,11 +110,11 @@ export const removeCard = async (req: Request, res: Response) => {
 
     } catch (e) {
         console.log(e.message)
-        return res.status(500).json({ msg: 'failed to add card', route: "/card" })
+        next(e)
     }
 }
 
-export const chargeCard = async (req: Request, res: Response) => {
+export const chargeCard = async (req: Request, res: Response, next: NextFunction) => {
     const { amount, user } = req.body
     const { id } = req.params
     try {
@@ -123,9 +123,7 @@ export const chargeCard = async (req: Request, res: Response) => {
             _id: id
         })
         if (!ownsCard)
-            return res.status(400).json({
-                msg: 'This Card does not belong to you',
-            })
+            throw new httpError(404, 'This Card does not belong to you')
         const tx_ref = `charge_${nanoid()}`
         const payload = {
             tx_ref,
@@ -153,12 +151,12 @@ export const chargeCard = async (req: Request, res: Response) => {
     }
     catch (e) {
         console.log(e.message)
-        return res.status(500).json({ msg: 'failed to add card', route: "/card" })
+        next(e)
     }
 }
 
 
-export const getCard = async (req: Request, res: Response) => {
+export const getCard = async (req: Request, res: Response, next: NextFunction) => {
     const { user } = req.body
     try {
         const cards = await Card.find({
@@ -168,21 +166,20 @@ export const getCard = async (req: Request, res: Response) => {
             return res.status(200).json({
                 cards
             })
-        return res.status(200).json({
-            msg: "No card is attached to this user"
-        })
+        throw new httpError(404, "No card is attached to this user")
 
-    } catch {
-        return res.status(500).json({ msg: 'Something went wrong', route: "/card" })
+
+    } catch (e) {
+        next(e)
     }
 }
 
-export const validateCardOtp = async (req: Request, res: Response) => {
+export const validateCardOtp = async (req: Request, res: Response, next: NextFunction) => {
     const { otp } = req.body
     const { tx_ref } = req.params
     const paymentToken = await cache.get(`opt-${tx_ref}`)
     if (!paymentToken)
-        return res.status(401).json('Invalid payment reference passed');
+        throw new httpError(401, 'Invalid payment reference passed')
     const tokenData = await verifyToken(paymentToken)
     try {
         const validate = await flw.Charge.validate({
@@ -194,7 +191,7 @@ export const validateCardOtp = async (req: Request, res: Response) => {
             return res.status(201).json({ msg: 'Success ! ,Card processing in process' })
     } catch (e) {
         console.log(e.message)
-        return res.status(500).json({ msg: 'failed to add card', route: "/card" })
+        next(e)
 
     }
 }

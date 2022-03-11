@@ -4,9 +4,62 @@ import { sign, verify } from 'jsonwebtoken';
 import { nanoid } from 'nanoid'
 import config from '../config'
 import bcrypt from 'bcrypt'
+import redisClient from '../config/redis'
+
+
+import User from '../models/user.model'
+
+import httpError from '../utils/error';
+
+const cache = new redisClient()
 
 const { secret, expiry } = config.jwt
+
+interface userData {
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+    username: string;
+}
 class Auth {
+
+    async register(data: userData) {
+        const { first_name, last_name, email, password, username } = data
+        const userExists = await User.findOne({ $or: [{ email }, { username }] })
+        if (userExists) {
+            throw new httpError(400, "Username/email already exists")
+        }
+        const user = await User.create({
+            first_name,
+            last_name,
+            email, password,
+            username
+        })
+        await this.sendEmailVerification(email)
+    }
+
+    async login(email: String, password: string) {
+        const user = await User.findOne({ email })
+        if (!user)
+            throw new httpError(400, "No user found with this email")
+        if (!user.isEmailVerified)
+            throw new httpError(400, 'Email not verified')
+        // validate password
+        const isPassword = await this.checkPassword(password, user.password)
+        if (!isPassword)
+            throw new httpError(400, 'Incorrect Password')
+        const data = {
+            email: user.email,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            username: user.username,
+            id: user._id
+        }
+        const authToken = await this.createToken(data)
+        await cache.add(data.id, authToken)
+        return { authToken, data }
+    }
 
     async sendEmailVerification(email: String) {
         try {
@@ -18,7 +71,7 @@ class Auth {
                 token,
                 email
             })
-            
+
             emailQueue.add({
                 payload: {
                     to: email,

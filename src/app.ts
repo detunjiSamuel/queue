@@ -6,6 +6,7 @@ import bodyParser from 'body-parser';
 import helmet from 'helmet'
 
 import router from "./routes"
+import handleError from './middleware/error';
 
 const app = express()
 
@@ -21,6 +22,8 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use('/api/v1', router);
+
+app.use(handleError)
 
 //wildcard
 app.use('*', (req, res) => {

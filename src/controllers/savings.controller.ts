@@ -1,12 +1,13 @@
-import { Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import dayjs from 'dayjs'
 
 import Savings from '../models/savings.model'
 import User from '../models/user.model'
 import Card from '../models/card.model'
+import httpError from '../utils/error'
 
 //   "amount", "frequency", "start_date", "end_date", "card"
-export const createSavingPlan = async (req: Request, res: Response) => {
+export const createSavingPlan = async (req: Request, res: Response, next: NextFunction) => {
     console.log("create savings plan")
     const { amount, frequency, start_date, end_date, card, isAutosave, user } = req.body
 
@@ -17,25 +18,21 @@ export const createSavingPlan = async (req: Request, res: Response) => {
                 isAutosave: true
             })
             if (savings)
-                return res.status(200).json({
-                    msg: 'Cannot have multiple plans with automatic debits',
-                })
+                throw new httpError(400, 'Cannot have multiple plans with automatic debits')
         }
         const start = dayjs(start_date)
         const end = dayjs(end_date)
         if (end.diff(start, 'month') < 2)
-            return res.status(200).json({
-                msg: 'Mininum of 2 months for savings',
-            })
+            throw new httpError(400, 'Mininum of 2 months for savings')
+
         if (card) {
             const ownsCard = await Card.findOne({
                 user: user.id,
                 _id: card
             })
             if (!ownsCard)
-                return res.status(400).json({
-                    msg: 'This Card does not belong to you',
-                })
+                throw new httpError(404, 'You do not own this card')
+
         }
 
         const plan = await Savings.create({
@@ -55,13 +52,13 @@ export const createSavingPlan = async (req: Request, res: Response) => {
 
     } catch (e) {
         console.log(e.message)
-        return res.status(500).json({ msg: 'something went wrong creating plan', route: "/savings" })
+        next(e)
     }
 
 
 }
 
-export const editSavingPlan = async (req: Request, res: Response) => {
+export const editSavingPlan = async (req: Request, res: Response, next: NextFunction) => {
     console.log("edit savings plan")
     try {
         const { amount, frequency, end_date, card, user, active } = req.body
@@ -72,25 +69,20 @@ export const editSavingPlan = async (req: Request, res: Response) => {
             active: true
         })
         if (!savingsExist)
-            return res.status(401).json({
-                msg: 'cannot perform this action',
-            })
+            throw new httpError(401, 'cannot perform this action')
         if (card) {
             const ownsCard = await Card.findOne({
                 user: user.id,
                 _id: card
             })
             if (!ownsCard)
-                return res.status(400).json({
-                    msg: 'This Card does not belong to you',
-                })
+                throw new httpError(400, 'This Card does not belong to you')
+
         }
         const end = dayjs(end_date)
         const now = dayjs()
         if (end.diff(now, 'month') < 2)
-            return res.status(200).json({
-                msg: 'Mininum of 2 months for savings',
-            })
+            throw new httpError(400, 'Mininum of 2 months for savings')
         await Savings.updateOne({
             _id: savingsExist.id
         }, {
@@ -101,14 +93,14 @@ export const editSavingPlan = async (req: Request, res: Response) => {
         })
     } catch (e) {
         console.log(e.message)
-        return res.status(500).json({ msg: 'something went editing plan', route: "/savings" })
+        next(e)
 
     }
 
 
 }
 
-export const getSavingsPlan = async (req: Request, res: Response) => {
+export const getSavingsPlan = async (req: Request, res: Response, next: NextFunction) => {
     const { user } = req.body
     try {
         const savings = await Savings.find({
@@ -118,19 +110,18 @@ export const getSavingsPlan = async (req: Request, res: Response) => {
             return res.status(200).json({
                 savings
             })
-        return res.status(200).json({
-            msg: "No savings is attached to this user"
-        })
+        throw new httpError(404, "No savings is attached to this user")
 
-    } catch {
-        return res.status(500).json({ msg: 'Something went wrong', route: "/savings" })
+
+    } catch (e) {
+        next(e)
     }
 
 
 
 }
 
-export const withdrawSavingsPlan = async (req: Request, res: Response) => {
+export const withdrawSavingsPlan = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { user } = req.body
         const { id } = req.params
@@ -140,9 +131,8 @@ export const withdrawSavingsPlan = async (req: Request, res: Response) => {
             active: true
         })
         if (!savingsExist)
-            return res.status(401).json({
-                msg: 'cannot perform this action',
-            })
+            throw new httpError(401, 'cannot perform this action')
+
         const amount = savingsExist.invested
         const activeuser = await User.findById(user.id)
         let newBalance: Number = activeuser.balance + amount
@@ -161,12 +151,11 @@ export const withdrawSavingsPlan = async (req: Request, res: Response) => {
         })
 
     } catch (e) {
-        return res.status(500).json({ msg: 'Something went wrong', route: "/savings" })
-
+        next(e)
     }
 }
 // move user balance to fund  a savings plan
-export const fundSavingsPlan = async (req: Request, res: Response) => {
+export const fundSavingsPlan = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { user, amount } = req.body
         const { id } = req.params
@@ -176,14 +165,12 @@ export const fundSavingsPlan = async (req: Request, res: Response) => {
             active: true
         })
         if (!savingsExist)
-            return res.status(401).json({
-                msg: 'cannot perform this action',
-            })
+            throw new httpError(401, 'cannot perform this action')
+
         const activeuser = await User.findById(user.id)
         if (amount > activeuser.balance)
-            return res.status(401).json({
-                msg: 'cannot perform this action, you are broke',
-            })
+            throw new httpError(401, 'cannot perform this action, you are broke')
+
         const newBalance = activeuser.balance - amount
         await User.updateOne({ _id: user.id }, { balance: newBalance })
         await Savings.updateOne({ _id: id }, { invested: amount + savingsExist.invested })
@@ -193,7 +180,6 @@ export const fundSavingsPlan = async (req: Request, res: Response) => {
 
     } catch (e) {
         console.log(e.meessage)
-        return res.status(500).json({ msg: 'Something went wrong', route: "/savings" })
-
+        next(e)
     }
 }

@@ -32,7 +32,7 @@ export const processAutosaving = async (frequency: String) => {
                 currency: "NGN",
                 first_name: saving.user.first_name,
                 last_name: saving.user.last_name,
-                ip: "pstmn",
+                ip: "pstmn",// decided to hardcode this
                 token: saving.card.token
             }
             const internalReferenceToken = await createToken({

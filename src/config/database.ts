@@ -5,7 +5,7 @@ import config from '.'
 export default async () => {
     await mongoose.connect(config.databaseUrl, async () => {
         console.log("db started")
-        // run seed
+        // to add run seed here
     })
 }
 
