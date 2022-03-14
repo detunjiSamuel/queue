@@ -30,6 +30,7 @@ async function handleAll(models: any) {
 
     for (const model in models) {
 
+        await models[model].deleteMany({}) // remove for production
         console.log(`${model} seed`)
         const contents = JSON.parse(await readFile(`./seed/data/${model}.json`, 'utf-8'))
         await models[model].create(contents)

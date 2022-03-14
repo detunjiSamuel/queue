@@ -47,8 +47,11 @@ router.get('/savings', isAuthenticated, savingsController.getSavingsPlan)
 router.post('/savings/:id/withdraw', isAuthenticated, savingsValidator.checkSavingsWithdraw(), handleValidation, savingsController.withdrawSavingsPlan)
 router.post('/saving/:id/fund', isAuthenticated, savingsValidator.checkFundSavings(), handleValidation, savingsController.fundSavingsPlan)
 
-
-
+// transactions
+// get specific transaction
+// get all transaction for a user
+// get unauth transaction
+// get all
 
 // others ||  miscellaneous
 router.post('/n/fund-wallet', checkCoinRequest(), handleValidation, coinContoller.fundRequest)

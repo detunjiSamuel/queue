@@ -30,10 +30,12 @@ class Auth {
         if (userExists) {
             throw new httpError(400, "Username/email already exists")
         }
+        const hashedPassword = await bcrypt.hash(password, 8);
         const user = await User.create({
             first_name,
             last_name,
-            email, password,
+            email,
+            password: hashedPassword,
             username
         })
         await this.sendEmailVerification(email)
