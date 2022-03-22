@@ -1,77 +1,68 @@
-import Queue from 'bull'
-import Redis from 'ioredis'
-import config from '.'
-
-// https://github.com/OptimalBits/bull/issues/503#issuecomment-338212399
-const EventEmitter = require( "events" );  
-EventEmitter.defaultMaxListeners = Infinity;
-
-
-const { url } = config.redis
+import Queue from 'bull';
+import Redis from 'ioredis';
+import config from '.';
 
 import { emailQueueHandler } from '../services/email.service';
 import { flwWebHookQueueHandler } from '../services/webhook.service';
-import { chargeQueueHandler } from '../services/card.service'
+import { chargeQueueHandler } from '../services/card.service';
+
+// https://github.com/OptimalBits/bull/issues/503#issuecomment-338212399
+const EventEmitter = require('events');
+EventEmitter.defaultMaxListeners = Infinity;
+
+const { url } = config.redis;
 
 // https://github.com/OptimalBits/bull/blob/master/PATTERNS.md#reusing-redis-connections
 
 const client = new Redis(url, {
-    maxRetriesPerRequest: null,
-    enableReadyCheck: false
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
 });
 const subscriber = new Redis(url, {
-    maxRetriesPerRequest: null,
-    enableReadyCheck: false
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
 });
 
 const opts = {
-    createClient: function (type) {
-        switch (type) {
-            case 'client':
-                return client;
-            case 'subscriber':
-                return subscriber;
-            default:
-                return new Redis(url, {
-                    maxRetriesPerRequest: null,
-                    enableReadyCheck: false
-                });
-        }
+  createClient: function (type) {
+    switch (type) {
+      case 'client':
+        return client;
+      case 'subscriber':
+        return subscriber;
+      default:
+        return new Redis(url, {
+          maxRetriesPerRequest: null,
+          enableReadyCheck: false,
+        });
     }
-}
+  },
+};
 
 client.on('ready', () => {
-    console.log('client ready')
-})
+  console.log('client ready');
+});
 
-export const emailQueue = new Queue('sendEmail', opts)
-export const flwWebHookQueue = new Queue('Flw_webHook', opts)
-export const chargeQueue = new Queue('charge_card', opts)
-
+export const emailQueue = new Queue('sendEmail', opts);
+export const flwWebHookQueue = new Queue('Flw_webHook', opts);
+export const chargeQueue = new Queue('charge_card', opts);
 
 emailQueue.process(emailQueueHandler);
 flwWebHookQueue.process(flwWebHookQueueHandler);
-chargeQueue.process(chargeQueueHandler)
+chargeQueue.process(chargeQueueHandler);
 
+export const dailyCronQueue = new Queue('dcron', opts);
+export const weeklyCronQueue = new Queue('wcron', opts);
+export const monthlyCronQueue = new Queue('mcron', opts);
 
+require('../jobs/index');
 
-
-export const dailyCronQueue = new Queue('dcron', opts)
-export const weeklyCronQueue = new Queue('wcron', opts)
-export const monthlyCronQueue = new Queue('mcron', opts)
-
-require('../jobs/index')
-
-export const testQueue = new Queue('test', opts)
-
-
+export const testQueue = new Queue('test', opts);
 
 testQueue.process(function (job, done) {
-    console.log("Re", job.data.msg);
-    done();
-});;
-
-
+  console.log('Re', job.data.msg);
+  done();
+});
 
 // testQueue.add({ msg: 'bar' })
 
@@ -88,7 +79,6 @@ testQueue.process(function (job, done) {
 // multi.del(emailQueue.toKey('repeat'));
 // multi.exec();
 
-
 // const payload  = {
 //     to  : "samadetunji01@gmail.com",
 //     subject : "test-failure",
@@ -96,5 +86,3 @@ testQueue.process(function (job, done) {
 // }
 
 // emailQueue.add({payload})
-
-

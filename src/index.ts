@@ -1,16 +1,12 @@
-import app from './app'
-import config from './config'
+import app from './app';
+import config from './config';
 
-import startDb from './config/database'
-
-
-
-
+import startDb from './config/database';
 
 app.listen(config.port, async () => {
-  console.log(`🚀 app running on port  ${config.port}`)
+  console.log(`🚀 app running on port  ${config.port}`);
   // setup queues
-  require('./config/bull')
+  require('./config/bull');
 
-  startDb()
-})
+  startDb();
+});

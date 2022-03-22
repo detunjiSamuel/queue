@@ -1,43 +1,45 @@
-import * as mongoose from 'mongoose'
+import * as mongoose from 'mongoose';
 const cardSchema = new mongoose.Schema({
-    first_6digits: String,
-    last_4digits: String,
-    issuer: String,
-    country: String,
-    type: String,
-    expiry: String
-})
-const transactionSchema = new mongoose.Schema({
+  first_6digits: String,
+  last_4digits: String,
+  issuer: String,
+  country: String,
+  type: String,
+  expiry: String,
+});
+const transactionSchema = new mongoose.Schema(
+  {
     id: {
-        type: String,
+      type: String,
     },
     payment_type: {
-        type: String
+      type: String,
     },
     tx_ref: {
-        type: String,
+      type: String,
     },
     flw_ref: {
-        type: String,
+      type: String,
     },
     amount: {
-        type: Number,
+      type: Number,
     },
     charged_amount: {
-        type: String,
+      type: String,
     },
     status: {
-        type: String
+      type: String,
     },
     card: {
-        type: cardSchema,
-        default: {}
+      type: cardSchema,
+      default: {},
     },
     createdAt: {
-        type: Date,
-        default: Date.now
+      type: Date,
+      default: Date.now,
     },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
-
-}, { timestamps: true });
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  },
+  { timestamps: true }
+);
 export default mongoose.model('transaction', transactionSchema);

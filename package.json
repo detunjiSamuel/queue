@@ -9,7 +9,17 @@
     "start:dev": "nodemon",
     "tsc": "./node_modules/typescript/bin/tsc",
     "build": "rimraf ./build && tsc",
-    "start": "npm run build && node build/src/index.js"
+    "start": "npm run build && node build/src/index.js",
+    "lint": "npm run lint:eslint && npm run lint:prettier",
+    "lint:prettier": "prettier --check \"src/**/**/!(*.d).{ts,json,md}\"",
+    "lint:eslint": "eslint src/**/*.ts",
+    "eslint:fix" : "eslint src/**/*.ts --fix",
+    "prettier:fix": "prettier --write \"src/**/**/!(*.d).{ts,json,md}\""
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint"
+    }
   },
   "keywords": [],
   "author": "Adetunji Samuel",
@@ -20,9 +30,20 @@
   "devDependencies": {
     "@types/jest": "^27.4.0",
     "@types/node": "^16.9.6",
+    "@typescript-eslint/eslint-plugin": "^5.16.0",
+    "@typescript-eslint/parser": "^5.16.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "husky": "^4.3.8",
     "jest": "^27.5.1",
     "nodemon": "^2.0.12",
     "open": "^8.4.0",
+    "prettier": "^2.6.0",
     "rimraf": "^3.0.2",
     "supertest": "^6.2.2",
     "ts-jest": "^27.1.3",

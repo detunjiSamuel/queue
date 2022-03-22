@@ -1,34 +1,33 @@
-import express from 'express'
-import morgan from 'morgan'
-import compression from 'compression'
-import cors from 'cors'
+import express from 'express';
+import morgan from 'morgan';
+import compression from 'compression';
+import cors from 'cors';
 import bodyParser from 'body-parser';
-import helmet from 'helmet'
+import helmet from 'helmet';
 
-import router from "./routes"
+import router from './routes';
 import handleError from './middleware/error';
 
-const app = express()
+const app = express();
 
 // setup all middleware
 app.use(compression());
 
-app.use(morgan('dev'))
+app.use(morgan('dev'));
 
 app.use(cors());
 app.use(helmet());
 
 app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/api/v1', router);
 
-app.use(handleError)
+app.use(handleError);
 
 //wildcard
 app.use('*', (req, res) => {
-    res.redirect('https://documenter.getpostman.com/view/10688183/UVsEUoTN')
-})
+  res.redirect('https://documenter.getpostman.com/view/10688183/UVsEUoTN');
+});
 
-
-export default app
+export default app;

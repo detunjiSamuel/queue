@@ -1,36 +1,39 @@
-import * as mongoose from 'mongoose'
-const depositRequestSchema = new mongoose.Schema({
+import * as mongoose from 'mongoose';
+const depositRequestSchema = new mongoose.Schema(
+  {
     email: {
-        type: String
+      type: String,
     },
     name: {
-        type: String
+      type: String,
     },
     tx_ref: {
-        type: String,
+      type: String,
     },
     coin: {
-        type: String,
+      type: String,
     },
     network: {
-        type: String,
+      type: String,
     },
     coinAddress: {
-        type: String,
+      type: String,
     },
     amount: {
-        type: Number,
+      type: Number,
     },
     value: {
-        type: Number,
+      type: Number,
     },
     status: {
-        type: String,
-        default: 'pending'
+      type: String,
+      default: 'pending',
     },
     createdAt: {
-        type: Date,
-        default: Date.now
-    }
-}, { timestamps: true });
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { timestamps: true }
+);
 export default mongoose.model('depositRequest', depositRequestSchema);

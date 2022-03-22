@@ -1,55 +1,51 @@
-import { nanoid } from 'nanoid'
-import redisClient from '../config/redis'
+import { nanoid } from 'nanoid';
+import RedisClient from '../config/redis';
 
-import Savings from "../models/savings.model"
-import AuthService from '../services/auth.service'
+import Savings from '../models/savings.model';
+import AuthService from '../services/auth.service';
 
-import { chargeBulk } from "./flutterwave.service"
+import { chargeBulk } from './flutterwave.service';
 
-
-const cache = new redisClient()
-const { createToken } = new AuthService()
-
+const cache = new RedisClient();
+const { createToken } = new AuthService();
 
 export const processAutosaving = async (frequency: String) => {
-    try {
-        console.log('handling %s', frequency)
-        // get all active plans that fit frequency category
-        const savings = await Savings.find({
-            frequency,
-            active: true
-        }).populate('user').populate('card')
-        if (!savings)
-            return null
-        const bulk_savings = []
-        for (const saving of savings) {
-            const tx_ref = `bulk_charge_${nanoid()}`
-            const payload = {
-                savings: saving._id,
-                tx_ref,
-                amount: saving.amount,
-                email: saving.user.email,
-                currency: "NGN",
-                first_name: saving.user.first_name,
-                last_name: saving.user.last_name,
-                ip: "pstmn",// decided to hardcode this
-                token: saving.card.token
-            }
-            const internalReferenceToken = await createToken({
-                ...payload,
-                action: 'CHARGE_CARD_SAVINGS',
-            })
-            await cache.add(tx_ref, internalReferenceToken)
-            bulk_savings.push(saving)
-        }
-        // charge all user cards 
-        await chargeBulk(frequency, bulk_savings)
-        return
-
-    } catch (e) {
-        console.log('handle auto savings Err:', e.message)
-        throw new Error('Process auto savivngs failed')
+  try {
+    console.log('handling %s', frequency);
+    // get all active plans that fit frequency category
+    const savings = await Savings.find({
+      frequency,
+      active: true,
+    })
+      .populate('user')
+      .populate('card');
+    if (!savings) return null;
+    const bulk_savings = [];
+    for (const saving of savings) {
+      const tx_ref = `bulk_charge_${nanoid()}`;
+      const payload = {
+        savings: saving._id,
+        tx_ref,
+        amount: saving.amount,
+        email: saving.user.email,
+        currency: 'NGN',
+        first_name: saving.user.first_name,
+        last_name: saving.user.last_name,
+        ip: 'pstmn', // decided to hardcode this
+        token: saving.card.token,
+      };
+      const internalReferenceToken = await createToken({
+        ...payload,
+        action: 'CHARGE_CARD_SAVINGS',
+      });
+      await cache.add(tx_ref, internalReferenceToken);
+      bulk_savings.push(saving);
     }
-}
-
-
+    // charge all user cards
+    await chargeBulk(frequency, bulk_savings);
+    return;
+  } catch (e) {
+    console.log('handle auto savings Err:', e.message);
+    throw new Error('Process auto savivngs failed');
+  }
+};
