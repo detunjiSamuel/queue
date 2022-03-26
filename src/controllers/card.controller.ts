@@ -4,10 +4,8 @@ import Flutterwave from 'flutterwave-node-v3';
 import AuthService from '../services/auth.service';
 
 import RedisClient from '../config/redis';
-import Card from '../models/card.model';
-
+import * as Service from '../services/card.service';
 import config from '../config/index';
-import { chargeQueue } from '../config/bull';
 import HttpError from '../utils/error';
 
 const { flutterwave } = config;
@@ -15,6 +13,77 @@ const { flutterwave } = config;
 const flw = new Flutterwave(flutterwave.public, flutterwave.private);
 const cache = new RedisClient();
 const { createToken, verifyToken } = new AuthService();
+
+export const removeCard = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { user } = req.body;
+  const { id } = req.params;
+  try {
+    await Service.removeCard(user, id);
+    return res.status(200).json({
+      msg: 'Delete successful',
+    });
+  } catch (e) {
+    console.log(e.message);
+    next(e);
+  }
+};
+
+export const chargeCard = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { amount, user } = req.body;
+  const { id } = req.params;
+  try {
+    await Service.chargeCard(user, amount, id);
+    return res.status(200).json({
+      msg: 'Card charge in  progress',
+    });
+  } catch (e) {
+    console.log(e.message);
+    next(e);
+  }
+};
+
+export const getCard = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { user } = req.body;
+  try {
+    const cards = await Service.getCard(user);
+    return res.status(200).json({
+      cards,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const validateCardOtp = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { otp } = req.body;
+  const { tx_ref } = req.params;
+  try {
+    const validated = await Service.validateCardOtp(otp, tx_ref);
+    if (validated)
+      return res
+        .status(201)
+        .json({ msg: 'Success ! ,Card processing in process' });
+  } catch (e) {
+    console.log(e.message);
+    next(e);
+  }
+};
 
 // TODO add encryption key to share private data
 export const addCard = async (
@@ -81,122 +150,6 @@ export const addCard = async (
         msg: 'Card processing in progress',
       });
     }
-  } catch (e) {
-    console.log(e.message);
-    next(e);
-  }
-};
-
-export const removeCard = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { user } = req.body;
-  const { id } = req.params;
-  try {
-    const ownsCard = await Card.findOne({
-      user: user.id,
-      _id: id,
-    });
-    if (!ownsCard) throw new HttpError(400, 'This Card does not belong to you');
-
-    await Card.deleteOne({
-      _id: id,
-    });
-    return res.status(200).json({
-      msg: 'Delete successful',
-    });
-  } catch (e) {
-    console.log(e.message);
-    next(e);
-  }
-};
-
-export const chargeCard = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { amount, user } = req.body;
-  const { id } = req.params;
-  try {
-    const ownsCard = await Card.findOne({
-      user: user.id,
-      _id: id,
-    });
-    if (!ownsCard) throw new HttpError(404, 'This Card does not belong to you');
-    const tx_ref = `charge_${nanoid()}`;
-    const payload = {
-      tx_ref,
-      email: user.email,
-      amount,
-      action: 'CHARGE_CARD',
-    };
-    const internalReferenceToken = await createToken(payload);
-    await cache.add(tx_ref, internalReferenceToken);
-    await chargeQueue.add({
-      payload: {
-        ...payload,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        narration: 'CHARGE_CARD',
-        redirect_url: 'https://www.google.com',
-        currency: 'NGN',
-        country: 'NG',
-        token: ownsCard.token,
-      },
-    });
-    return res.status(200).json({
-      msg: 'Card charge in  progress',
-    });
-  } catch (e) {
-    console.log(e.message);
-    next(e);
-  }
-};
-
-export const getCard = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { user } = req.body;
-  try {
-    const cards = await Card.find({
-      user: user.id,
-    });
-    if (cards)
-      return res.status(200).json({
-        cards,
-      });
-    throw new HttpError(404, 'No card is attached to this user');
-  } catch (e) {
-    next(e);
-  }
-};
-
-export const validateCardOtp = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { otp } = req.body;
-  const { tx_ref } = req.params;
-  const paymentToken = await cache.get(`opt-${tx_ref}`);
-  if (!paymentToken)
-    throw new HttpError(401, 'Invalid payment reference passed');
-  const tokenData = await verifyToken(paymentToken);
-  try {
-    const validate = await flw.Charge.validate({
-      otp,
-      flw_ref: tokenData.flw_ref,
-    });
-    await cache.delete(`opt-${tx_ref}`);
-    if (validate.message === 'Charge validated')
-      return res
-        .status(201)
-        .json({ msg: 'Success ! ,Card processing in process' });
   } catch (e) {
     console.log(e.message);
     next(e);
