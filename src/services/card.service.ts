@@ -4,9 +4,8 @@ import AuthService from '../services/auth.service';
 import RedisClient from '../config/redis';
 
 import Card from '../models/card.model';
-import { chargeQueue } from '../config/bull';
+import { chargeQueue, emailQueue } from '../config/bull';
 import { nanoid } from 'nanoid';
-
 import Flutterwave from 'flutterwave-node-v3';
 import config from '../config/index';
 
@@ -53,6 +52,13 @@ export const chargeCard = async (user, amount, id) => {
       currency: 'NGN',
       country: 'NG',
       token: ownsCard.token,
+    },
+  });
+  await emailQueue.add({
+    payload: {
+      to: user.email,
+      subject: 'Credit with card',
+      html: `<p>${amount} was credited to your wallet</p>`,
     },
   });
 };
