@@ -25,7 +25,7 @@ app.use('/api/v1', router);
 
 app.use(handleError);
 
-//wildcard
+// wildcard
 app.use('*', (req, res) => {
   res.redirect('https://documenter.getpostman.com/view/10688183/UVsEUoTN');
 });

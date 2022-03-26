@@ -10,6 +10,7 @@
     "tsc": "./node_modules/typescript/bin/tsc",
     "build": "rimraf ./build && tsc",
     "start": "npm run build && node build/src/index.js",
+    "seed" : "npm run ind seed/seeder.ts",
     "lint": "npm run lint:eslint && npm run lint:prettier",
     "lint:prettier": "prettier --check \"src/**/**/!(*.d).{ts,json,md}\"",
     "lint:eslint": "eslint src/**/*.ts",

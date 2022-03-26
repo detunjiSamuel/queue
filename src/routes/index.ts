@@ -8,6 +8,7 @@ import * as authContoller from '../controllers/auth.controller';
 import * as cardContoller from '../controllers/card.controller';
 import * as coinContoller from '../controllers/coin.controller';
 import * as savingsController from '../controllers/savings.controller';
+import * as transactionContoller from '../controllers/trasactions.controller';
 import * as savingsValidator from '../validator/savings.validator';
 import * as cardValidator from '../validator/card.validator';
 import { isAuthenticated } from '../middleware';
@@ -97,10 +98,11 @@ router.post(
 );
 
 // transactions
-// get specific transaction
-// get all transaction for a user
-// get unauth transaction
-// get all
+router.get(
+  '/transactions',
+  isAuthenticated,
+  transactionContoller.getAllTransactions
+);
 
 // others ||  miscellaneous
 router.post(
