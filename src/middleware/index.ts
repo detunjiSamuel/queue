@@ -15,7 +15,10 @@ export const isAuthenticated = async (
       return res.status(401).json('Not Authenticated! Please, Login');
     }
     const verified = await auth.verifyToken(authToken[1]);
+    // @ts-ignore
+
     const tokenExists = await cache.get(verified.id);
+    // @ts-ignore
 
     if (verified && verified.id && tokenExists) {
       req.body.user = verified;

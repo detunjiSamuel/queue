@@ -6,6 +6,7 @@ import bodyParser from 'body-parser';
 import helmet from 'helmet';
 
 import router from './routes';
+import business from './giftCard';
 import handleError from './middleware/error';
 
 const app = express();
@@ -22,6 +23,7 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/api/v1', router);
+app.use('/api/bus/v1', business);
 
 app.use(handleError);
 
