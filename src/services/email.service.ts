@@ -25,7 +25,7 @@ const transporter = nodemailer.createTransport({
 
 // { ...mail }
 
-const sendEmail = async (payload: mailContent) => {
+export const sendEmail = async (payload: mailContent) => {
   try {
     console.log('send mail', 'final send');
 
@@ -35,17 +35,5 @@ const sendEmail = async (payload: mailContent) => {
   } catch (e) {
     console.log('Error occurred. ' + e.message);
     return process.exit(1);
-  }
-};
-
-export const emailQueueHandler = async (job: any, done: any) => {
-  const { payload } = job.data;
-  payload.from = mail.auth.user;
-  try {
-    console.log('emailQueue', 'sending payload');
-    await sendEmail(payload);
-    done();
-  } catch (e) {
-    done(new Error(`send mail failed- ${payload.subject}`));
   }
 };

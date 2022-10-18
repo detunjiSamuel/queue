@@ -4,6 +4,7 @@ import AuthService from '../services/auth.service';
 
 const cache = new RedisClient();
 const auth = new AuthService();
+
 export const isAuthenticated = async (
   req: Request,
   res: Response,

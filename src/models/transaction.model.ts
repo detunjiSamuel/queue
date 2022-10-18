@@ -9,27 +9,13 @@ const cardSchema = new mongoose.Schema({
 });
 const transactionSchema = new mongoose.Schema(
   {
-    id: {
-      type: String,
-    },
-    payment_type: {
-      type: String,
-    },
-    tx_ref: {
-      type: String,
-    },
-    flw_ref: {
-      type: String,
-    },
-    amount: {
-      type: Number,
-    },
-    charged_amount: {
-      type: String,
-    },
-    status: {
-      type: String,
-    },
+    id: String,
+    payment_type: String,
+    tx_ref: String,
+    flw_ref: String,
+    amount: Number,
+    charged_amount: String,
+    status: String,
     card: {
       type: cardSchema,
       default: {},

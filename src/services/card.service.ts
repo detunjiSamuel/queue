@@ -15,18 +15,6 @@ const cache = new RedisClient();
 const { createToken, verifyToken } = new AuthService();
 const flw = new Flutterwave(flutterwave.public, flutterwave.private);
 
-export const chargeQueueHandler = async (job, done) => {
-  const { payload } = job.data;
-
-  try {
-    console.log('chargeQueue', 'sending payload');
-    await chargeWithToken(payload);
-    done();
-  } catch (e) {
-    done(new Error(`send mail failed- ${payload.subject}`));
-  }
-};
-
 export const chargeCard = async (user, amount, id) => {
   const ownsCard = await Card.findOne({
     user: user.id,

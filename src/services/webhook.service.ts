@@ -79,16 +79,3 @@ export const processWebHook = async (payload) => {
     return null;
   }
 };
-
-export const flwWebHookQueueHandler = async (job: any, done: any) => {
-  try {
-    console.log('flwWebHookQueue', 'handling data');
-    await processWebHook({
-      ...job.data,
-    });
-    done();
-  } catch (e) {
-    console.log(e.message);
-    done(new Error(`Flw webhook processing failed`));
-  }
-};

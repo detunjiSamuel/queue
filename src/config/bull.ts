@@ -2,9 +2,9 @@ import Queue from 'bull';
 import Redis from 'ioredis';
 import config from '.';
 
-import { emailQueueHandler } from '../services/email.service';
-import { flwWebHookQueueHandler } from '../services/webhook.service';
-import { chargeQueueHandler } from '../services/card.service';
+import emailProcessor from '../jobs/processors/email';
+import flwProcessorWebhook from '../jobs/processors/flw_webhook';
+import paymentChargeProcessor from '../jobs/processors/paymentCharge';
 
 // https://github.com/OptimalBits/bull/issues/503#issuecomment-338212399
 const EventEmitter = require('events');
@@ -47,9 +47,9 @@ export const emailQueue = new Queue('sendEmail', opts);
 export const flwWebHookQueue = new Queue('Flw_webHook', opts);
 export const chargeQueue = new Queue('charge_card', opts);
 
-emailQueue.process(emailQueueHandler);
-flwWebHookQueue.process(flwWebHookQueueHandler);
-chargeQueue.process(chargeQueueHandler);
+emailQueue.process(5, emailProcessor);
+flwWebHookQueue.process(5, flwProcessorWebhook);
+chargeQueue.process(5, paymentChargeProcessor);
 
 export const dailyCronQueue = new Queue('dcron', opts);
 export const weeklyCronQueue = new Queue('wcron', opts);
