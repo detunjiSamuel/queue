@@ -76,7 +76,6 @@ export const validateCardOtp = async (otp, transactionReference) => {
   const validate = await flw.Charge.validate({
     otp,
     // @ts-ignore
-
     flw_ref: tokenData.flw_ref,
   });
   await cache.delete(`opt-${transactionReference}`);
