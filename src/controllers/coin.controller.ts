@@ -5,13 +5,11 @@ import { validateAddress } from '../services/binance.service';
 import { nanoid } from 'nanoid';
 
 import RedisClient from '../config/redis';
-import AuthService from '../services/auth.service';
+import { createToken } from '../services/auth.service';
 
 const withdrawMin = 10;
 const withdrawMax = 100000;
 const USDT_RATE = 600;
-
-const { createToken } = new AuthService();
 
 interface fundRequestType {
   email?: string;

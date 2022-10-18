@@ -2,12 +2,11 @@ import { nanoid } from 'nanoid';
 import RedisClient from '../config/redis';
 
 import Savings from '../models/savings.model';
-import AuthService from '../services/auth.service';
+import { createToken } from '../services/auth.service';
 
 import { chargeBulk } from './flutterwave.service';
 
 const cache = new RedisClient();
-const { createToken } = new AuthService();
 
 export const processAutosaving = async (frequency: String) => {
   try {

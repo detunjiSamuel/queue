@@ -21,81 +21,78 @@ interface userData {
   password: string;
   username: string;
 }
-class Auth {
-  async register(data: userData) {
-    const { first_name, last_name, email, password, username } = data;
-    const userExists = await User.findOne({ $or: [{ email }, { username }] });
-    if (userExists) {
-      throw new HttpError(400, 'Username/email already exists');
-    }
-    const hashedPassword = await bcrypt.hash(password, 8);
-    const user = await User.create({
-      first_name,
-      last_name,
+
+export const register = async (data: userData) => {
+  const { first_name, last_name, email, password, username } = data;
+  const userExists = await User.findOne({ $or: [{ email }, { username }] });
+  if (userExists) {
+    throw new HttpError(400, 'Username/email already exists');
+  }
+  const hashedPassword = await bcrypt.hash(password, 8);
+  const user = await User.create({
+    first_name,
+    last_name,
+    email,
+    password: hashedPassword,
+    username,
+  });
+  await sendEmailVerification(email);
+};
+
+export const login = async (email: String, password: string) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new HttpError(400, 'No user found with this email');
+  if (!user.isEmailVerified) throw new HttpError(400, 'Email not verified');
+  // validate password
+  const isPassword = await checkPassword(password, user.password);
+  if (!isPassword) throw new HttpError(400, 'Incorrect Password');
+  const data = {
+    email: user.email,
+    first_name: user.first_name,
+    last_name: user.last_name,
+    username: user.username,
+    id: user._id.toString(),
+  };
+  const authToken = await createToken(data);
+  await cache.add(data.id, authToken);
+  return { authToken, data };
+};
+
+export const sendEmailVerification = async (email: String) => {
+  try {
+    const id = nanoid();
+    const token = await createToken({ email, id });
+    const link = `${config.host}/api/v1/email/verify/${token}`;
+    await emailVerification.create({
+      id,
+      token,
       email,
-      password: hashedPassword,
-      username,
     });
-    await this.sendEmailVerification(email);
+
+    emailQueue.add({
+      payload: {
+        to: email,
+        subject: 'verify email',
+        html: `<p>Email Verification Link: <a>${link}</a></p>`,
+      },
+    });
+    return { msg: 'Email Verification Sent', emailVerification };
+  } catch (e) {
+    throw new Error('failure in sendEmailVerification');
   }
+};
 
-  async login(email: String, password: string) {
-    const user = await User.findOne({ email });
-    if (!user) throw new HttpError(400, 'No user found with this email');
-    if (!user.isEmailVerified) throw new HttpError(400, 'Email not verified');
-    // validate password
-    const isPassword = await this.checkPassword(password, user.password);
-    if (!isPassword) throw new HttpError(400, 'Incorrect Password');
-    const data = {
-      email: user.email,
-      first_name: user.first_name,
-      last_name: user.last_name,
-      username: user.username,
-      id: user._id.toString(),
-    };
-    const authToken = await this.createToken(data);
-    await cache.add(data.id, authToken);
-    return { authToken, data };
-  }
+export const createToken = (data: object) => {
+  const token = sign(data, secret, { algorithm: 'HS256', expiresIn: expiry });
+  return token;
+};
 
-  async sendEmailVerification(email: String) {
-    try {
-      const id = nanoid();
-      const token = await this.createToken({ email, id });
-      const link = `${config.host}/api/v1/email/verify/${token}`;
-      await emailVerification.create({
-        id,
-        token,
-        email,
-      });
+export const verifyToken = (token: string) => {
+  const decoded = verify(token, secret);
+  return decoded;
+};
 
-      emailQueue.add({
-        payload: {
-          to: email,
-          subject: 'verify email',
-          html: `<p>Email Verification Link: <a>${link}</a></p>`,
-        },
-      });
-      return { msg: 'Email Verification Sent', emailVerification };
-    } catch (e) {
-      throw new Error('failure in sendEmailVerification');
-    }
-  }
-
-  createToken(data: object) {
-    const token = sign(data, secret, { algorithm: 'HS256', expiresIn: expiry });
-    return token;
-  }
-
-  verifyToken(token: string) {
-    const decoded = verify(token, secret);
-    return decoded;
-  }
-
-  async checkPassword(value: String, hashedString: string) {
-    const isMatch = await bcrypt.compare(value, hashedString);
-    return isMatch;
-  }
-}
-
-export default Auth;
+export const checkPassword = async (value: String, hashedString: string) => {
+  const isMatch = await bcrypt.compare(value, hashedString);
+  return isMatch;
+};

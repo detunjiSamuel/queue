@@ -1,11 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import User from '../models/user.model';
 import emailVerification from '../models/emailVerification.model';
-import AuthService from '../services/auth.service';
+import * as service from '../services/auth.service';
 import RedisClient from '../config/redis';
 import HttpError from '../utils/error';
 
-const service = new AuthService();
 const cache = new RedisClient();
 
 export const register = async (

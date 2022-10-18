@@ -1,6 +1,5 @@
-import { chargeWithToken } from './flutterwave.service';
 import HttpError from '../utils/error';
-import AuthService from '../services/auth.service';
+import { createToken, verifyToken } from '../services/auth.service';
 import RedisClient from '../config/redis';
 
 import Card from '../models/card.model';
@@ -12,7 +11,6 @@ import config from '../config/index';
 const { flutterwave } = config;
 
 const cache = new RedisClient();
-const { createToken, verifyToken } = new AuthService();
 const flw = new Flutterwave(flutterwave.public, flutterwave.private);
 
 export const chargeCard = async (user, amount, id) => {

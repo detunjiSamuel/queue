@@ -7,10 +7,7 @@ import transactions from '../models/transaction.model';
 
 import { transferCoin } from './binance.service';
 import { validatePayment } from './flutterwave.service';
-import AuthService from './auth.service';
-
-// @ts-ignore
-const { verifyToken } = new AuthService();
+import { verifyToken } from './auth.service';
 
 const cache = new RedisClient();
 
