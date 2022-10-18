@@ -1,4 +1,4 @@
-import { chargeWithToken } from '../../services/flutterwave.service';
+import { chargeWithToken } from '../services/flutterwave.service';
 
 const paymentChargeProcessor = async (job, done) => {
   const { payload } = job.data;

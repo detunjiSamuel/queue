@@ -1,5 +1,5 @@
-import config from '../../config';
-import { sendEmail } from '../../services/email.service';
+import config from '../config';
+import { sendEmail } from '../services/email.service';
 
 const { mail } = config;
 const emailProcessor = async (job, done) => {

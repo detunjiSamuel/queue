@@ -1,4 +1,4 @@
-import { processWebHook } from '../../services/webhook.service';
+import { processWebHook } from '../services/webhook.service';
 
 const flwProcessorWebhook = async (job: any, done: any) => {
   try {
