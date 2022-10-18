@@ -32,7 +32,7 @@ export const processAutosaving = async (frequency: String) => {
         first_name: saving.user.first_name, // @ts-ignore
         last_name: saving.user.last_name,
         ip: 'pstmn', // decided to hardcode this
-         // @ts-ignore
+        // @ts-ignore
         token: saving.card.token,
       };
       const internalReferenceToken = await createToken({

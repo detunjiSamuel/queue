@@ -9,6 +9,7 @@ import { transferCoin } from './binance.service';
 import { validatePayment } from './flutterwave.service';
 import AuthService from './auth.service';
 
+// @ts-ignore
 const { verifyToken } = new AuthService();
 
 const cache = new RedisClient();
