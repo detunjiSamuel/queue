@@ -9,7 +9,7 @@
     "start:dev": "nodemon",
     "tsc": "./node_modules/typescript/bin/tsc",
     "build": "rimraf ./build && tsc",
-    "start": "npm run build && node build/src/index.js",
+    "start": "npm run build && node --optimize_for_size --max_old_space_size=460 build/src/index.js",
     "seed": "npm run ind seed/seeder.ts",
     "lint": "npm run lint:eslint && npm run lint:prettier",
     "lint:prettier": "prettier --check \"src/**/**/!(*.d).{ts,json,md}\"",
