@@ -63,6 +63,8 @@ export const processWebHook = async (payload) => {
 
         _id: tokenData.savings,
       });
+      // @ts-ignore
+
       const invested = savings.invested + Number(amount);
       // @ts-ignore
 

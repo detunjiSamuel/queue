@@ -51,7 +51,7 @@ class Auth {
       first_name: user.first_name,
       last_name: user.last_name,
       username: user.username,
-      id: user._id,
+      id: user._id.toString(),
     };
     const authToken = await this.createToken(data);
     await cache.add(data.id, authToken);

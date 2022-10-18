@@ -5,7 +5,14 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import helmet from 'helmet';
 
-import router from './routes';
+import {
+  authRoute,
+  cardRoute,
+  emailRoute,
+  miscRoute,
+  savingsRoute,
+  transactionRoute,
+} from './routes';
 import business from './giftCard';
 import handleError from './middleware/error';
 
@@ -22,8 +29,13 @@ app.use(helmet());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use('/api/v1', router);
+app.use('/api/v1/user', authRoute);
+app.use('/api/v1/savings', savingsRoute);
+app.use('/api/v1/card', cardRoute);
+app.use('/api/v1/transactions', transactionRoute);
+app.use('/api/v1/transactions/email', emailRoute);
 app.use('/api/bus/v1', business);
+app.use('/api/v1', miscRoute);
 
 app.use(handleError);
 

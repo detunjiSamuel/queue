@@ -145,6 +145,7 @@ export const withdrawSavingsPlan = async (
 
     const amount = savingsExist.invested;
     const activeuser = await User.findById(user.id);
+    // @ts-ignore
     const newBalance: Number = activeuser.balance + amount;
 
     await Savings.updateOne(

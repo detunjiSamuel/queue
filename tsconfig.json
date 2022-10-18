@@ -8,6 +8,10 @@
       "module": "commonjs"
 
     },
-    "include": ["./src/**/*", "mocks"]
+    "include": ["./src/**/*", "mocks"],
+    "exclude": [
+      "node_modules",
+      "jest.config.ts"
+    ],
 }
 

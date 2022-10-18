@@ -26,12 +26,13 @@ export const processAutosaving = async (frequency: String) => {
       const payload = {
         savings: saving._id,
         tx_ref,
-        amount: saving.amount,
+        amount: saving.amount, // @ts-ignore
         email: saving.user.email,
-        currency: 'NGN',
-        first_name: saving.user.first_name,
+        currency: 'NGN', // @ts-ignore
+        first_name: saving.user.first_name, // @ts-ignore
         last_name: saving.user.last_name,
         ip: 'pstmn', // decided to hardcode this
+         // @ts-ignore
         token: saving.card.token,
       };
       const internalReferenceToken = await createToken({
