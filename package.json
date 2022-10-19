@@ -68,6 +68,7 @@
     "firebase-admin": "^11.0.1",
     "flutterwave-node-v3": "^1.0.9",
     "helmet": "^5.0.2",
+    "i": "^0.3.7",
     "ioredis": "^4.28.5",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.2.2",
