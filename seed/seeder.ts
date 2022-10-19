@@ -20,7 +20,7 @@ async function seed() {
     Savings,
   });
   console.log('seed complete');
-  // process.exit(0)
+  process.exit(0)
 }
 
 async function handleAll(models: any) {
