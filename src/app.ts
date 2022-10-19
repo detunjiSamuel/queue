@@ -13,7 +13,6 @@ import {
   savingsRoute,
   transactionRoute,
 } from './routes';
-import business from './giftCard';
 import handleError from './middleware/error';
 
 const app = express();
@@ -34,7 +33,6 @@ app.use('/api/v1/savings', savingsRoute);
 app.use('/api/v1/card', cardRoute);
 app.use('/api/v1/transactions', transactionRoute);
 app.use('/api/v1/transactions/email', emailRoute);
-app.use('/api/bus/v1', business);
 app.use('/api/v1', miscRoute);
 
 app.use(handleError);
