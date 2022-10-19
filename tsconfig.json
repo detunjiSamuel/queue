@@ -5,7 +5,11 @@
       "target": "es2015",
       "esModuleInterop": true,
 
-      "module": "commonjs"
+      "module": "commonjs",
+      "types": [
+        // ... your other types
+        "node"
+      ],
 
     },
     "include": ["./src/**/*", "mocks"],
