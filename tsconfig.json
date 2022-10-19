@@ -12,7 +12,7 @@
       ],
 
     },
-    "include": ["./src/**/*", "mocks"],
+    "include": ["./src/**/*", "mocks","seed"],
     "exclude": [
       "node_modules",
       "jest.config.ts"
