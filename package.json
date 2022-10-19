@@ -51,6 +51,7 @@
     "ts-node": "^10.9.1"
   },
   "dependencies": {
+    "@types/node": "^16.11.68",
     "@binance/connector": "^1.7.0",
     "@types/express": "^4.17.13",
     "axios": "^0.21.4",
