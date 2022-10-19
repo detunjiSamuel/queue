@@ -11,6 +11,6 @@ src/utils/fwTest.js
 
 
 test/auth.test.ts
-
+package-lock.json
 
 src/giftCard/pettysavetesting-firebase-adminsdk-wtezv-8cb77f85a4.json
