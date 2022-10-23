@@ -13,7 +13,8 @@ export const createSavingPlan = async (
   next: NextFunction
 ) => {
   console.log('create savings plan');
-  const { amount, frequency, start_date, end_date, card, isAutosave, user } =
+  const { user } = res.locals;
+  const { amount, frequency, start_date, end_date, card, isAutosave } =
     req.body;
 
   try {
@@ -67,7 +68,8 @@ export const editSavingPlan = async (
 ) => {
   console.log('edit savings plan');
   try {
-    const { amount, frequency, end_date, card, user, active } = req.body;
+    const { user } = res.locals;
+    const { amount, frequency, end_date, card, active } = req.body;
     const { id } = req.params;
     const savingsExist = await Savings.findOne({
       user: user.id,
@@ -113,7 +115,7 @@ export const getSavingsPlan = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { user } = req.body;
+  const { user } = res.locals;
   try {
     const savings = await Savings.find({
       user: user.id,
@@ -177,7 +179,8 @@ export const fundSavingsPlan = async (
   next: NextFunction
 ) => {
   try {
-    const { user, amount } = req.body;
+    const { user } = res.locals;
+    const { amount } = req.body;
     const { id } = req.params;
     const savingsExist = await Savings.findOne({
       user: user.id,

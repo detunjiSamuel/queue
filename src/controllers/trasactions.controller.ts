@@ -8,7 +8,7 @@ export const getAllTransactions = async (
   next: NextFunction
 ) => {
   console.log('transactions', 'get all user');
-  const { user } = req.body;
+  const { user } = res.locals;
   try {
     const transactions = await Transaction.find({
       user: user.id,

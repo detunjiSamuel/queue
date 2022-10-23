@@ -21,7 +21,7 @@ export const isAuthenticated = async (
     // @ts-ignore
 
     if (verified && verified.id && tokenExists) {
-      req.body.user = verified;
+      res.locals.user = verified;
       next();
     } else {
       return res.status(401).json({ msg: 'Not Authenticated! Please, Login' });

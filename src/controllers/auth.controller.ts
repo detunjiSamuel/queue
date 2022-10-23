@@ -56,7 +56,7 @@ export const logout = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { user } = req.body;
+  const { user } = res.locals;
   try {
     const removedToken = await cache.delete(user.id);
     return res.status(200).json({

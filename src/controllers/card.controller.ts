@@ -18,7 +18,7 @@ export const removeCard = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { user } = req.body;
+  const { user } = res.locals;
   const { id } = req.params;
   try {
     await Service.removeCard(user, id);
@@ -54,7 +54,7 @@ export const getCard = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { user } = req.body;
+  const { user } = res.locals;
   try {
     const cards = await Service.getCard(user);
     return res.status(200).json({
@@ -91,7 +91,8 @@ export const addCard = async (
   next: NextFunction
 ) => {
   console.log('add card', 'initiated');
-  const { card_number, cvv, expiry_month, expiry_year, user, pin } = req.body;
+  const { card_number, cvv, expiry_month, expiry_year, pin } = req.body;
+  const { user } = res.locals;
   const payload = generatePayload({
     card_number,
     cvv,
