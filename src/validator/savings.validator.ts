@@ -61,6 +61,6 @@ const customFreqCheck = (value) => {
 };
 
 const customAmount = (value) => {
-  if (value > 5000) return true;
+  if (value > 1000) return true;
   return false;
 };
