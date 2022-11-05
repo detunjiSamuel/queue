@@ -32,7 +32,7 @@ app.use('/api/v1/user', authRoute);
 app.use('/api/v1/savings', savingsRoute);
 app.use('/api/v1/card', cardRoute);
 app.use('/api/v1/transactions', transactionRoute);
-app.use('/api/v1/transactions/email', emailRoute);
+app.use('/api/v1/email', emailRoute);
 app.use('/api/v1', miscRoute);
 
 app.use(handleError);
