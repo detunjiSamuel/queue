@@ -9,33 +9,31 @@ import { handleValidation } from '../utils';
 
 const router = Router();
 
+router.use(isAuthenticated);
+
 // savings
 router
   .post(
     '',
-    isAuthenticated,
     savingsValidator.checkCreateSavings(),
     handleValidation,
     savingsController.createSavingPlan
   )
   .put(
     '/:id',
-    isAuthenticated,
     savingsValidator.checkEditSavings(),
     handleValidation,
     savingsController.editSavingPlan
   )
-  .get('', isAuthenticated, savingsController.getSavingsPlan)
+  .get('', savingsController.getSavingsPlan)
   .post(
     '/:id/withdraw',
-    isAuthenticated,
     savingsValidator.checkSavingsWithdraw(),
     handleValidation,
     savingsController.withdrawSavingsPlan
   )
   .post(
     '/:id/fund',
-    isAuthenticated,
     savingsValidator.checkFundSavings(),
     handleValidation,
     savingsController.fundSavingsPlan

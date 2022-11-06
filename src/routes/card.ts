@@ -8,18 +8,20 @@ import { handleValidation } from '../utils';
 
 const router = Router();
 
+router.use(isAuthenticated);
+
 // cards
 router
-  .post('', isAuthenticated, cardContoller.addCard)
-  .post('/:tx_ref/validate', isAuthenticated, cardContoller.validateCardOtp)
-  .get('', isAuthenticated, cardContoller.getCard)
+  .post('', cardContoller.addCard)
+  .post('/:tx_ref/validate', cardContoller.validateCardOtp)
+  .get('', cardContoller.getCard)
   .post(
     '/:id/charge',
-    isAuthenticated,
+
     cardValidator.checkChargeCard(),
     handleValidation,
     cardContoller.chargeCard
   )
-  .delete('/:id', isAuthenticated, cardContoller.removeCard);
+  .delete('/:id', cardContoller.removeCard);
 
 export default router;

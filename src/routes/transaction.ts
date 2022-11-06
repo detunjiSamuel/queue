@@ -6,7 +6,9 @@ import { isAuthenticated } from '../middleware';
 
 const router = Router();
 
+router.use(isAuthenticated);
+
 // transactions
-router.get('', isAuthenticated, transactionContoller.getAllTransactions);
+router.get('', transactionContoller.getAllTransactions);
 
 export default router;
