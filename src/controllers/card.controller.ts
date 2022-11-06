@@ -8,6 +8,8 @@ import * as Service from '../services/card.service';
 import config from '../config/index';
 import HttpError from '../utils/error';
 
+import * as helper from '../helpers/card';
+
 const { flutterwave } = config;
 
 const flw = new Flutterwave(flutterwave.public, flutterwave.private);
@@ -93,88 +95,21 @@ export const addCard = async (
   console.log('add card', 'initiated');
   const { card_number, cvv, expiry_month, expiry_year, pin } = req.body;
   const { user } = res.locals;
-  const payload = generatePayload({
-    card_number,
-    cvv,
-    expiry_month,
-    expiry_year,
-    ...user,
-    pin,
-  });
+
   try {
-    const response = await flw.Charge.card(payload);
-    if (response.status === 'error' || response.status.includes('fail'))
-      throw new HttpError(401, 'This card cannot be accepted');
-
-    const directive = response.meta.authorization.mode;
-
-    const internalReferenceToken = await createToken({
-      tx_ref: payload.tx_ref,
-      flw_ref: response.data.flw_ref,
-      email: payload.email,
-      amount: payload.amount,
-      action: 'ADD_CARD',
+    const response = await Service.addCard({
+      card_number,
+      cvv,
+      expiry_month,
+      expiry_year,
+      pin,
+      user,
     });
-    await cache.add(payload.tx_ref, internalReferenceToken);
-    // authorize card transaction
-    if (directive === 'redirect') {
-      const link = response.meta.authorization.redirect;
-      return res.status(200).json({
-        msg: 'Complete add action with link',
-        link,
-        action: 'redirect',
-      });
-    } else if (directive === 'pin' || directive === 'avs_noauth') {
-      return res.status(200).json({
-        msg: `missing field to authorize`,
-        fields: response.meta.authorization.fields,
-        tx_ref: payload.tx_ref,
-        route: '/card',
-      });
-    } else if (directive === 'otp') {
-      payload.flw_ref = response.data.flw_ref;
-      const payloadToken = await createToken({
-        ...payload,
-        action: 'OTP_VALIDATION',
-      });
-      // check exists then override
-      console.log('tx_ref:', payload.tx_ref);
-      await cache.add(`opt-${payload.tx_ref}`, payloadToken);
-      return res.status(200).json({
-        msg: response.data.processor_response,
-        fields: ['pin'],
-        route: `/card/${payload.tx_ref}/validate`,
-      });
-    } else {
-      return res.status(200).json({
-        msg: 'Card processing in progress',
-      });
-    }
+    return res.status(200).json({
+      ...response,
+    });
   } catch (e) {
     console.log(e.message);
     next(e);
   }
 };
-
-function generatePayload(data: any) {
-  if (data.pin)
-    data.authorization = {
-      mode: 'pin',
-      fields: ['pin'],
-      pin: data.pin,
-    };
-  // remove excess from db
-  delete data.iat;
-  delete data.exp;
-  delete data.id;
-  data.tx_ref = `add_${nanoid()}`;
-  data.fullname = data.first_name + ' ' + data.last_name;
-  return {
-    ...data,
-    redirect_url: 'https://www.google.com',
-    enckey: flutterwave.encrypt,
-    phone_number: '0902620185', // i dont collect numbers so will use this one
-    currency: 'NGN',
-    amount: '100',
-  };
-}

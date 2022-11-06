@@ -7,6 +7,7 @@ import { chargeQueue, emailQueue } from '../config/bull';
 import { nanoid } from 'nanoid';
 import Flutterwave from 'flutterwave-node-v3';
 import config from '../config/index';
+import * as helper from '../helpers/card';
 
 const { flutterwave } = config;
 
@@ -80,4 +81,73 @@ export const validateCardOtp = async (otp, transactionReference) => {
   });
   await cache.delete(`opt-${transactionReference}`);
   if (validate.message === 'Charge validated') return true;
+};
+
+export const addCard = async ({
+  card_number,
+  cvv,
+  expiry_month,
+  expiry_year,
+  pin,
+  user,
+}) => {
+  const payload = helper.generatePayload({
+    card_number,
+    cvv,
+    expiry_month,
+    expiry_year,
+    ...user,
+    pin,
+  });
+
+  const response = await flw.Charge.card(payload);
+  if (response.status === 'error' || response.status.includes('fail'))
+    throw new HttpError(401, 'This card cannot be accepted');
+
+  const directive = response.meta.authorization.mode;
+
+  const internalReferenceToken = await createToken({
+    tx_ref: payload.tx_ref,
+    flw_ref: response.data.flw_ref,
+    email: payload.email,
+    amount: payload.amount,
+    action: 'ADD_CARD',
+  });
+
+  await cache.add(payload.tx_ref, internalReferenceToken);
+
+  // authorize card transaction
+  if (directive === 'redirect') {
+    const link = response.meta.authorization.redirect;
+    return {
+      msg: 'Complete add action with link',
+      link,
+      action: 'redirect',
+    };
+  } else if (directive === 'pin' || directive === 'avs_noauth') {
+    return {
+      msg: `missing field to authorize`,
+      fields: response.meta.authorization.fields,
+      tx_ref: payload.tx_ref,
+      route: '/card',
+    };
+  } else if (directive === 'otp') {
+    payload.flw_ref = response.data.flw_ref;
+    const payloadToken = await createToken({
+      ...payload,
+      action: 'OTP_VALIDATION',
+    });
+    // check exists then override
+    console.log('tx_ref:', payload.tx_ref);
+    await cache.add(`opt-${payload.tx_ref}`, payloadToken);
+    return {
+      msg: response.data.processor_response,
+      fields: ['pin'],
+      route: `/card/${payload.tx_ref}/validate`,
+    };
+  } else {
+    return {
+      msg: 'Card processing in progress',
+    };
+  }
 };
