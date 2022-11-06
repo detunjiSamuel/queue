@@ -34,6 +34,6 @@ export const sendEmail = async (payload: mailContent) => {
     console.log('Preview URL: %s', nodemailer.getTestMessageUrl(newMail));
   } catch (e) {
     console.log('Error occurred. ' + e.message);
-    return process.exit(1);
+    throw e;
   }
 };

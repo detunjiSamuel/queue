@@ -6,6 +6,7 @@ export const checkRegister = () => {
     body('last_name').notEmpty().withMessage('Please, provide a last name'),
     body('email')
       .notEmpty()
+      .withMessage('Please, provide a valid email')
       .isEmail()
       .withMessage('Please, provide a valid email'),
     body('username')
