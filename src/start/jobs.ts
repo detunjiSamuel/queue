@@ -1,8 +1,7 @@
 import { processAutosaving } from '../services/savings.service';
-
 import * as cron from 'node-cron';
 
-const registerJobs = () => {
+export const registerJobs = () => {
   cron.schedule('0 8 * * *', async () => {
     await processAutosaving('daily');
   });

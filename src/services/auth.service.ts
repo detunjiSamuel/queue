@@ -1,4 +1,4 @@
-import { emailQueue } from '../config/bull';
+import { getQueue } from '../config/bull';
 import emailVerification from '../models/emailVerification.model';
 import { sign, verify } from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
@@ -59,6 +59,7 @@ export const login = async (email: String, password: string) => {
 };
 
 export const sendEmailVerification = async (email: String) => {
+  const emailQueue = getQueue('sendEmail');
   try {
     const id = nanoid();
     const token = await createToken({ email, id });

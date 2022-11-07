@@ -3,7 +3,7 @@ import { createToken, verifyToken } from '../services/auth.service';
 import RedisClient from '../config/redis';
 
 import Card from '../models/card.model';
-import { chargeQueue, emailQueue } from '../config/bull';
+import { getQueue } from '../config/bull';
 import { nanoid } from 'nanoid';
 import Flutterwave from 'flutterwave-node-v3';
 import config from '../config/index';
@@ -15,6 +15,8 @@ const cache = new RedisClient();
 const flw = new Flutterwave(flutterwave.public, flutterwave.private);
 
 export const chargeCard = async (user, amount, id) => {
+  const chargeQueue = getQueue('charge_card');
+  const emailQueue = getQueue('sendEmail');
   const ownsCard = await Card.findOne({
     user: user.id,
     _id: id,

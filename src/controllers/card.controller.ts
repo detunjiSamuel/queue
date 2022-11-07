@@ -1,19 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { nanoid } from 'nanoid';
-import Flutterwave from 'flutterwave-node-v3';
-import { createToken } from '../services/auth.service';
-
-import RedisClient from '../config/redis';
 import * as Service from '../services/card.service';
-import config from '../config/index';
-import HttpError from '../utils/error';
-
-import * as helper from '../helpers/card';
-
-const { flutterwave } = config;
-
-const flw = new Flutterwave(flutterwave.public, flutterwave.private);
-const cache = new RedisClient();
 
 export const removeCard = async (
   req: Request,

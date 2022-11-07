@@ -14,8 +14,11 @@ import {
   transactionRoute,
 } from './routes';
 import handleError from './middleware/error';
+import registerQueues from './start/queues';
 
 const app = express();
+
+registerQueues();
 
 // setup all middleware
 app.use(compression());
