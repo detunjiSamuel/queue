@@ -6,9 +6,6 @@ import registerJobs from './start/jobs';
 
 app.listen(config.port, async () => {
   console.log(`🚀 app running on port  ${config.port}`);
-  // setup queues
-  require('./config/bull');
-
   startDb();
   registerJobs();
 });

@@ -24,7 +24,8 @@ export const chargeCard = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { amount, user } = req.body;
+  const { amount } = req.body;
+  const { user } = res.locals;
   const { id } = req.params;
   try {
     await Service.chargeCard(user, amount, id);
@@ -79,7 +80,18 @@ export const addCard = async (
   next: NextFunction
 ) => {
   console.log('add card', 'initiated');
-  const { card_number, cvv, expiry_month, expiry_year, pin } = req.body;
+  const {
+    card_number,
+    cvv,
+    expiry_month,
+    expiry_year,
+    pin,
+    city,
+    address,
+    state,
+    country,
+    zipcode,
+  } = req.body;
   const { user } = res.locals;
 
   try {
@@ -90,6 +102,11 @@ export const addCard = async (
       expiry_year,
       pin,
       user,
+      city,
+      address,
+      state,
+      country,
+      zipcode,
     });
     return res.status(200).json({
       ...response,

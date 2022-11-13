@@ -20,3 +20,16 @@ const customAmount = (value) => {
   if (value > 1000) return true;
   return false;
 };
+
+export const checkAddCard = () => {
+  return [
+    body('card_number').notEmpty(),
+    body('cvv').notEmpty(),
+    body('expiry_month').notEmpty(),
+    body('expiry_year').notEmpty(),
+  ];
+};
+
+export const checkValidateCard = () => {
+  return [body('otp').notEmpty()];
+};

@@ -19,6 +19,7 @@ export const checkCreateSavings = () => {
       .isDate()
       .withMessage('Please, provide a valid date in formar YYYY/MM/DD'),
     body('frequency')
+      .optional()
       .custom(customFreqCheck)
       .withMessage(`Frequency can only be :${ALL_FREQUENCY.toString()} `),
   ];
@@ -34,6 +35,7 @@ export const checkEditSavings = () => {
       .custom(customStart)
       .withMessage('end_date cannot be less than today'),
     body('frequency')
+      .optional()
       .custom(customFreqCheck)
       .withMessage(`Frequency can only be :${ALL_FREQUENCY.toString()} `),
   ];

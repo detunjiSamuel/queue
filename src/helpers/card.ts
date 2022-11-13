@@ -4,12 +4,24 @@ import { nanoid } from 'nanoid';
 const { flutterwave } = config;
 
 export function generatePayload(data: any) {
+  const { city, address, state, country, zipcode } = data;
   if (data.pin)
     data.authorization = {
       mode: 'pin',
       fields: ['pin'],
       pin: data.pin,
     };
+
+  if (address) {
+    data.authorization = {
+      mode: 'avs_noauth',
+      city,
+      address,
+      state,
+      country,
+      zipcode,
+    };
+  }
   // remove excess from db
   delete data.iat;
   delete data.exp;

@@ -17,6 +17,7 @@ const flw = new Flutterwave(flutterwave.public, flutterwave.private);
 export const chargeCard = async (user, amount, id) => {
   const chargeQueue = getQueue('charge_card');
   const emailQueue = getQueue('sendEmail');
+
   const ownsCard = await Card.findOne({
     user: user.id,
     _id: id,
@@ -92,6 +93,11 @@ export const addCard = async ({
   expiry_year,
   pin,
   user,
+  city,
+  address,
+  state,
+  country,
+  zipcode,
 }) => {
   const payload = helper.generatePayload({
     card_number,
@@ -100,38 +106,38 @@ export const addCard = async ({
     expiry_year,
     ...user,
     pin,
+    city,
+    address,
+    state,
+    country,
+    zipcode,
   });
 
   const response = await flw.Charge.card(payload);
+
+  console.log(response);
+
   if (response.status === 'error' || response.status.includes('fail'))
     throw new HttpError(401, 'This card cannot be accepted');
 
-  const directive = response.meta.authorization.mode;
+  const directive = response.meta?.authorization.mode;
 
-  const internalReferenceToken = await createToken({
-    tx_ref: payload.tx_ref,
-    flw_ref: response.data.flw_ref,
-    email: payload.email,
-    amount: payload.amount,
-    action: 'ADD_CARD',
-  });
+  const moreInfoNeeded = ['pin', 'avs_noauth'];
 
-  await cache.add(payload.tx_ref, internalReferenceToken);
-
-  // authorize card transaction
-  if (directive === 'redirect') {
-    const link = response.meta.authorization.redirect;
+  if (moreInfoNeeded.includes(directive)) {
+    return {
+      msg: 'more information required',
+      data: [
+        ...response.meta.authorization.fields.map(
+          (field) => `${field} required`
+        ),
+      ],
+    };
+  } else if (directive === 'redirect') {
     return {
       msg: 'Complete add action with link',
-      link,
+      link: response.meta.authorization.redirect,
       action: 'redirect',
-    };
-  } else if (directive === 'pin' || directive === 'avs_noauth') {
-    return {
-      msg: `missing field to authorize`,
-      fields: response.meta.authorization.fields,
-      tx_ref: payload.tx_ref,
-      route: '/card',
     };
   } else if (directive === 'otp') {
     payload.flw_ref = response.data.flw_ref;
@@ -142,12 +148,27 @@ export const addCard = async ({
     // check exists then override
     console.log('tx_ref:', payload.tx_ref);
     await cache.add(`opt-${payload.tx_ref}`, payloadToken);
+
+    const internalReferenceToken = await createToken({
+      tx_ref: payload.tx_ref,
+      flw_ref: response.data.flw_ref,
+      email: payload.email,
+      amount: payload.amount,
+      action: 'ADD_CARD',
+    });
+
+    await cache.add(payload.tx_ref, internalReferenceToken);
+
     return {
       msg: response.data.processor_response,
-      fields: ['pin'],
+      data: ['pin required'],
       route: `/card/${payload.tx_ref}/validate`,
     };
   } else {
+    // check
+    // the data.status field will be either "successful" or "failed".
+    console.log('last alternative hit');
+
     return {
       msg: 'Card processing in progress',
     };

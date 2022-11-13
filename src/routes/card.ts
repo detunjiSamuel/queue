@@ -12,8 +12,18 @@ router.use(isAuthenticated);
 
 // cards
 router
-  .post('', cardContoller.addCard)
-  .post('/:tx_ref/validate', cardContoller.validateCardOtp)
+  .post(
+    '',
+    cardValidator.checkAddCard(),
+    handleValidation,
+    cardContoller.addCard
+  )
+  .post(
+    '/:tx_ref/validate',
+    cardValidator.checkValidateCard(),
+    handleValidation,
+    cardContoller.validateCardOtp
+  )
   .get('', cardContoller.getCard)
   .post(
     '/:id/charge',
