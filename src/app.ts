@@ -15,10 +15,12 @@ import {
 } from './routes';
 import handleError from './middleware/error';
 import registerQueues from './start/queues';
+import setupEventListeners from './events';
 
 const app = express();
 
 registerQueues();
+setupEventListeners();
 
 // setup all middleware
 app.use(compression());

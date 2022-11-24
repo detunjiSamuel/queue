@@ -10,21 +10,18 @@ const router = Router();
 
 router.use(isAuthenticated);
 
+router
+  .route('')
+  .post(cardValidator.checkAddCard(), handleValidation, cardContoller.addCard)
+  .get(cardContoller.getCard);
 // cards
 router
-  .post(
-    '',
-    cardValidator.checkAddCard(),
-    handleValidation,
-    cardContoller.addCard
-  )
   .post(
     '/:tx_ref/validate',
     cardValidator.checkValidateCard(),
     handleValidation,
     cardContoller.validateCardOtp
   )
-  .get('', cardContoller.getCard)
   .post(
     '/:id/charge',
 

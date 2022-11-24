@@ -77,7 +77,8 @@ export const getSavingsPlan = async (
   try {
     const savings = await savingsService.getSavingsPlan({ user });
     return res.status(200).json({
-      savings,
+      status: 'success',
+      data: savings,
     });
   } catch (e) {
     next(e);
