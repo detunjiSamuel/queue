@@ -47,13 +47,13 @@ export const processWebHook = async (payload) => {
       await transactions.create({ ...payload, user: user._id });
       // @ts-ignore
     } else if (tokenData.action === 'FUND_CRYPTO') {
-      await transactions.create({
-        ...payload,
-      });
-      // transafer USDT token
       // @ts-ignore
-
-      await transferCoin(tokenData.address, tokenData.amount);
+      const { address, amount } = tokenData;
+      emitter.emit('webhooks:coin:fund_crypto', {
+        address,
+        amount,
+        payload,
+      });
       // @ts-ignore
     } else if (tokenData.action === 'CHARGE_CARD_SAVINGS') {
       emitter.emit('webhooks:savings:record_card_charge', {

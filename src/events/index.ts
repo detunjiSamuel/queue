@@ -1,7 +1,7 @@
 import emitter from './emitter';
 
 const eventsMap = {
-  'webhooks:coin:fund_cryto': ['transfer_coin'],
+  'webhooks:coin:fund_crypto': ['transfer_coin'],
   'webhooks:cards:add_card': ['add_card', 'record_card_charge'],
   'webhooks:savings:record_card_charge': ['record_card_charge'],
 };
