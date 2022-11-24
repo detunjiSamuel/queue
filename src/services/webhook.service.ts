@@ -8,6 +8,7 @@ import transactions from '../models/transaction.model';
 import { transferCoin } from './binance.service';
 import { validatePayment } from './flutterwave.service';
 import { verifyToken } from './auth.service';
+import emitter from '../events/emitter';
 
 const cache = new RedisClient();
 
@@ -55,19 +56,13 @@ export const processWebHook = async (payload) => {
       await transferCoin(tokenData.address, tokenData.amount);
       // @ts-ignore
     } else if (tokenData.action === 'CHARGE_CARD_SAVINGS') {
-      // Credit user savings plan
-      const savings = await Savings.findOne({
-        // @ts-ignore
-
-        _id: tokenData.savings,
+     
+      emitter.emit('webhooks:savings:record_card_charge', {
+        //@ts-ignore
+        savings_id: tokenData.savings,
+        amount,
+        payload,
       });
-      // @ts-ignore
-
-      const invested = savings.invested + Number(amount);
-      // @ts-ignore
-
-      await Savings.updateOne({ _id: tokenData.savings }, { invested });
-      await transactions.create({ ...payload, user: savings.user });
     }
     // make reference invalid
     return await cache.delete(tx_ref);
