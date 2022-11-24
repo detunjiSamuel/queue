@@ -28,23 +28,18 @@ export const processWebHook = async (payload) => {
 
     // @ts-ignore
     if (tokenData.action === 'ADD_CARD' || tokenData.action === 'CHARGE_CARD') {
-      const user = await User.findOne({
-        // @ts-ignore
-        email: tokenData.email,
+      //@ts-ignore
+      const { email: user_email } = tokenData;
+
+      const card = isValid.card;
+
+      emitter.emit('record_add_card_charge', {
+        user_email,
+        card,
+        amount,
+        payload,
       });
-      // @ts-ignore
 
-      if (tokenData.action === 'ADD_CARD' && isValid.card)
-        await Card.create({
-          ...isValid.card,
-          user: user._id,
-        });
-      // Creadit user with amount
-      const balance = user.balance + Number(amount);
-      // @ts-ignore
-
-      await User.updateOne({ email: tokenData.email }, { balance });
-      await transactions.create({ ...payload, user: user._id });
       // @ts-ignore
     } else if (tokenData.action === 'FUND_CRYPTO') {
       // @ts-ignore

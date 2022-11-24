@@ -2,8 +2,8 @@ import emitter from './emitter';
 
 const eventsMap = {
   'webhooks:coin:fund_crypto': ['transfer_coin'],
-  'webhooks:cards:add_card': ['add_card', 'record_card_charge'],
-  'webhooks:savings:record_card_charge': ['record_card_charge'],
+  'webhooks:cards:add_card': ['record_add_card_charge'],
+  'webhooks:savings:record_card_charge': ['record_card_charge_savings'],
 };
 
 const setupEventListeners = async () => {
@@ -19,7 +19,7 @@ const setupEventListeners = async () => {
 
     console.log(' 🎧  Event Listeners up and running  🎧  🎧 ');
   } catch (e) {
-    console.error('event listeners setup failed ');
+    console.error('event listeners setup failed ', e);
     process.exit(1);
   }
 };
