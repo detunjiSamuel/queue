@@ -56,7 +56,6 @@ export const processWebHook = async (payload) => {
       await transferCoin(tokenData.address, tokenData.amount);
       // @ts-ignore
     } else if (tokenData.action === 'CHARGE_CARD_SAVINGS') {
-     
       emitter.emit('webhooks:savings:record_card_charge', {
         //@ts-ignore
         savings_id: tokenData.savings,
