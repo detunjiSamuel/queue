@@ -11,4 +11,6 @@ const cardSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 });
 
-export default mongoose.model('Card', cardSchema);
+const CardModel = mongoose.model('Card', cardSchema);
+
+export default CardModel;

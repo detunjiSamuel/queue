@@ -20,4 +20,9 @@ const depositRequestSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-export default mongoose.model('depositRequest', depositRequestSchema);
+
+const DepositRequestModel = mongoose.model(
+  'depositRequest',
+  depositRequestSchema
+);
+export default DepositRequestModel;

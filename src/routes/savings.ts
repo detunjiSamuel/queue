@@ -13,19 +13,22 @@ router.use(isAuthenticated);
 
 // savings
 router
+  .route('')
   .post(
-    '',
     savingsValidator.checkCreateSavings(),
     handleValidation,
     savingsController.createSavingPlan
   )
+  .get(savingsController.getSavingsPlan);
+
+router
   .put(
     '/:id',
     savingsValidator.checkEditSavings(),
     handleValidation,
     savingsController.editSavingPlan
   )
-  .get('', savingsController.getSavingsPlan)
+
   .post(
     '/:id/withdraw',
     savingsValidator.checkSavingsWithdraw(),
