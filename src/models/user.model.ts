@@ -25,6 +25,9 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    two_factor_authenticator_key: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

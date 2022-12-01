@@ -40,6 +40,11 @@ const config = {
     secret: process.env.JWT_SECRET || 'random',
     expiry: process.env.JWT_EXPIRY || '3d',
   },
+  cipher: {
+    secret_key:
+      process.env.CIPHER_SECRET_KEY || 'aPdSgVkYp3s6v9y$B&E)H+MbQeThWmZq',
+    iv: process.env.CIPHER_IV || '9z$C&F)J@McQfTjW',
+  },
 };
 
 export default config;
