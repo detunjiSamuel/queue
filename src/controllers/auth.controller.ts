@@ -1,9 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import User from '../models/user.model';
-import emailVerification from '../models/emailVerification.model';
-import * as service from '../services/auth.service';
+
+import * as authService from '../services/auth.service';
 import RedisClient from '../config/redis';
-import HttpError from '../utils/error';
 
 const cache = new RedisClient();
 
@@ -14,7 +12,7 @@ export const register = async (
 ) => {
   const { first_name, last_name, email, password, username } = req.body;
   try {
-    await service.register({
+    await authService.register({
       first_name,
       last_name,
       email,
@@ -22,10 +20,13 @@ export const register = async (
       username,
     });
     return res.status(201).json({
-      msg: 'Account Created',
-      user: {
-        email: email || 'test',
-        username: username || 'more',
+      status: 'success',
+      message: 'Account Created',
+      data: {
+        email,
+        username,
+        first_name,
+        last_name,
       },
     });
   } catch (e) {
@@ -38,13 +39,18 @@ export const login = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { email, password } = req.body;
+  const { email, password, two_factor_token } = req.body;
   try {
-    const { authToken, data } = await service.login(email, password);
+    const data = await authService.login({
+      email,
+      password,
+      two_factor_token,
+    });
+
     return res.status(200).json({
-      msg: 'Login Successful!',
+      status: 'success',
+      message: 'Login Successful!',
       data,
-      authToken,
     });
   } catch (e) {
     next(e);
@@ -58,7 +64,7 @@ export const logout = async (
 ) => {
   const { user } = res.locals;
   try {
-    const removedToken = await cache.delete(user.id);
+    await cache.delete(user.id);
     return res.status(200).json({
       msg: 'Logout Successful!',
     });
@@ -74,16 +80,7 @@ export const verifyEmail = async (
 ) => {
   const { token } = req.params;
   try {
-    const isValidToken = await service.verifyToken(token);
-    if (!isValidToken) throw new HttpError(400, 'Email Link Expired');
-    const tokenExists = await emailVerification.findOne({ token });
-    if (!tokenExists)
-      throw new HttpError(400, 'Unable to verify email, please try again');
-    const user = await User.updateOne(
-      { email: tokenExists.email },
-      { isEmailVerified: true }
-    );
-    await emailVerification.deleteOne({ token });
+    await authService.verifyEmail({ token });
     return res.status(200).json({
       msg: 'Email Verified!',
     });
@@ -99,11 +96,9 @@ export const resendEmailVerification = async (
 ) => {
   const { email } = req.body;
   try {
-    const user = await User.findOne({ email });
-    if (!user) throw new HttpError(400, 'Email not found');
-    if (user.isEmailVerified)
-      throw new HttpError(400, 'Email verified already');
-    await service.sendEmailVerification(email);
+    await authService.resendEmailVerification({
+      email,
+    });
     return res.status(200).json({
       msg: 'Verification Email Resent!',
       email,

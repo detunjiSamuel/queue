@@ -6,56 +6,26 @@ import config from '../config';
 import bcrypt from 'bcrypt';
 import RedisClient from '../config/redis';
 
-import User from '../models/user.model';
-
 import HttpError from '../utils/error';
+import userModel from '../models/user.model';
 
 const cache = new RedisClient();
 
 const { secret, expiry } = config.jwt;
 
-interface userData {
-  first_name: string;
-  last_name: string;
-  email: string;
-  password: string;
-  username: string;
-}
-
-export const register = async (data: userData) => {
-  const { first_name, last_name, email, password, username } = data;
-  const userExists = await User.findOne({ $or: [{ email }, { username }] });
-  if (userExists) {
-    throw new HttpError(400, 'Username/email already exists');
-  }
-  const hashedPassword = await bcrypt.hash(password, 8);
-  const user = await User.create({
-    first_name,
-    last_name,
-    email,
-    password: hashedPassword,
-    username,
-  });
-  await sendEmailVerification(email);
+export const createToken = (data: object) => {
+  const token = sign(data, secret, { algorithm: 'HS256', expiresIn: expiry });
+  return token;
 };
 
-export const login = async (email: String, password: string) => {
-  const user = await User.findOne({ email });
-  if (!user) throw new HttpError(400, 'No user found with this email');
-  if (!user.isEmailVerified) throw new HttpError(400, 'Email not verified');
-  // validate password
-  const isPassword = await checkPassword(password, user.password);
-  if (!isPassword) throw new HttpError(400, 'Incorrect Password');
-  const data = {
-    email: user.email,
-    first_name: user.first_name,
-    last_name: user.last_name,
-    username: user.username,
-    id: user._id.toString(),
-  };
-  const authToken = await createToken(data);
-  await cache.add(data.id, authToken);
-  return { authToken, data };
+export const verifyToken = (token: string) => {
+  const decoded = verify(token, secret);
+  return decoded;
+};
+
+export const checkPassword = async (value: String, hashedString: string) => {
+  const isMatch = await bcrypt.compare(value, hashedString);
+  return isMatch;
 };
 
 export const sendEmailVerification = async (email: String) => {
@@ -83,17 +53,102 @@ export const sendEmailVerification = async (email: String) => {
   }
 };
 
-export const createToken = (data: object) => {
-  const token = sign(data, secret, { algorithm: 'HS256', expiresIn: expiry });
-  return token;
+interface userData {
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  username: string;
+}
+
+export const register = async (data: userData) => {
+  const { first_name, last_name, email, password, username } = data;
+  const userExists = await userModel.findOne({
+    $or: [{ email }, { username }],
+  });
+  if (userExists) {
+    throw new HttpError(400, 'Username/email already exists');
+  }
+  const hashedPassword = await bcrypt.hash(password, 8);
+  const user = await userModel.create({
+    first_name,
+    last_name,
+    email,
+    password: hashedPassword,
+    username,
+  });
+  await sendEmailVerification(email);
 };
 
-export const verifyToken = (token: string) => {
-  const decoded = verify(token, secret);
-  return decoded;
+export const login = async ({ email, password, two_factor_token }) => {
+  const user = await userModel.findOne({ email });
+
+  if (!user) throw new HttpError(400, 'No user found with this email');
+
+  if (!user.isEmailVerified) throw new HttpError(400, 'Email not verified');
+
+  const requiresTwoFactor = !!user.two_factor_authenticator_key;
+  // validate password
+  const isPassword = await checkPassword(password, user.password);
+
+  if (!isPassword) throw new HttpError(400, 'Incorrect Password');
+
+  if (requiresTwoFactor)
+    if (!two_factor_token)
+      throw new HttpError(400, 'requires two factor to complete');
+
+  const data = {
+    email: user.email,
+    first_name: user.first_name,
+    last_name: user.last_name,
+    username: user.username,
+    id: user._id.toString(),
+  };
+
+  const authToken = await createToken(data);
+
+  await cache.add(data.id, authToken);
+
+  return { authToken, ...data };
 };
 
-export const checkPassword = async (value: String, hashedString: string) => {
-  const isMatch = await bcrypt.compare(value, hashedString);
-  return isMatch;
+export const changePassword = async ({
+  old_password,
+  new_password,
+  user_id,
+}) => {
+  const user = await userModel.findById(user_id);
+
+  const isPassword = await checkPassword(old_password, `${user.password}`);
+
+  if (!isPassword) throw new HttpError(400, 'incorrect password passed');
+
+  const hashedPassword = await bcrypt.hash(new_password, 8);
+  await userModel.findByIdAndUpdate(user_id, {
+    password: hashedPassword,
+  });
+};
+
+export const verifyEmail = async ({ token }) => {
+  const isValidToken = await verifyToken(token);
+
+  if (!isValidToken) throw new HttpError(400, 'Email Link Expired');
+
+  const tokenExists = await emailVerification.findOne({ token });
+
+  if (!tokenExists)
+    throw new HttpError(400, 'Unable to verify email, please try again');
+
+  await userModel.updateOne(
+    { email: tokenExists.email },
+    { isEmailVerified: true }
+  );
+  await emailVerification.deleteOne({ token });
+};
+
+export const resendEmailVerification = async ({ email }) => {
+  const user = await userModel.findOne({ email });
+  if (!user) throw new HttpError(400, 'Email not found');
+  if (user.isEmailVerified) throw new HttpError(400, 'Email verified already');
+  await sendEmailVerification(email);
 };

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import * as Service from '../services/card.service';
+import * as cardService from '../services/card.service';
 
 export const removeCard = async (
   req: Request,
@@ -9,12 +9,13 @@ export const removeCard = async (
   const { user } = res.locals;
   const { id } = req.params;
   try {
-    await Service.removeCard(user, id);
+    const data = await cardService.removeCard({ user, card_id: id });
     return res.status(200).json({
-      msg: 'Delete successful',
+      status: 'success',
+      message: 'Delete successful',
+      data,
     });
   } catch (e) {
-    console.log(e.message);
     next(e);
   }
 };
@@ -28,12 +29,13 @@ export const chargeCard = async (
   const { user } = res.locals;
   const { id } = req.params;
   try {
-    await Service.chargeCard(user, amount, id);
+    const data = await cardService.chargeCard({ user, amount, id });
     return res.status(200).json({
-      msg: 'Card charge in  progress',
+      status: 'success',
+      message: 'Card charge in  progress',
+      data,
     });
   } catch (e) {
-    console.log(e.message);
     next(e);
   }
 };
@@ -45,9 +47,11 @@ export const getCard = async (
 ) => {
   const { user } = res.locals;
   try {
-    const cards = await Service.getCard(user);
+    const data = await cardService.getCard(user);
     return res.status(200).json({
-      cards,
+      status: 'success',
+      message: null,
+      data,
     });
   } catch (e) {
     next(e);
@@ -62,13 +66,18 @@ export const validateCardOtp = async (
   const { otp } = req.body;
   const { tx_ref } = req.params;
   try {
-    const validated = await Service.validateCardOtp(otp, tx_ref);
-    if (validated)
-      return res
-        .status(201)
-        .json({ msg: 'Success ! ,Card processing in process' });
+    const validated = await cardService.validateCardOtp(otp, tx_ref);
+
+    const message = validated
+      ? 'Success ! ,Card processing in process'
+      : 'card validation failed';
+
+    return res.status(201).json({
+      status: 'success',
+      message,
+      data: null,
+    });
   } catch (e) {
-    console.log(e.message);
     next(e);
   }
 };
@@ -95,7 +104,7 @@ export const addCard = async (
   const { user } = res.locals;
 
   try {
-    const response = await Service.addCard({
+    const response = await cardService.addCard({
       card_number,
       cvv,
       expiry_month,
@@ -109,10 +118,13 @@ export const addCard = async (
       zipcode,
     });
     return res.status(200).json({
-      ...response,
+      status: 'success',
+      message: null,
+      data: {
+        ...response,
+      },
     });
   } catch (e) {
-    console.log(e.message);
     next(e);
   }
 };

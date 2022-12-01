@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import Transaction from '../models/transaction.model';
-import HttpError from '../utils/error';
+
+import * as trasactionService from '../services/transactions.service';
 
 export const getAllTransactions = async (
   req: Request,
@@ -10,16 +10,16 @@ export const getAllTransactions = async (
   console.log('transactions', 'get all user');
   const { user } = res.locals;
   try {
-    const transactions = await Transaction.find({
-      user: user.id,
+    const data = trasactionService.getTransactions({
+      user_id: user.id,
     });
-    if (transactions)
-      return res.status(200).json({
-        transactions,
-      });
-    throw new HttpError(404, 'No transactions');
+
+    return res.status(200).json({
+      status: 'success',
+      message: null,
+      data,
+    });
   } catch (e) {
-    console.log(e.meessage);
     next(e);
   }
 };

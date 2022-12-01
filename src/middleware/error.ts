@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 const handleError = (err, req: Request, res: Response, next: NextFunction) => {
+  console.log(err);
   if (err.status === undefined)
     return res.status(500).json({
       msg: 'Something went wrong from our end',

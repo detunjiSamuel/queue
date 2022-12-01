@@ -1,13 +1,7 @@
 import RedisClient from '../config/redis';
 
-import User from '../models/user.model';
-import Savings from '../models/savings.model';
-import Card from '../models/card.model';
-import transactions from '../models/transaction.model';
-
-import { transferCoin } from './binance.service';
-import { validatePayment } from './flutterwave.service';
-import { verifyToken } from './auth.service';
+import * as flutterwaveService from './flutterwave.service';
+import * as authService from './auth.service';
 import emitter from '../events/emitter';
 
 const cache = new RedisClient();
@@ -20,10 +14,14 @@ export const processWebHook = async (payload) => {
     const internalReferenceToken = await cache.get(tx_ref);
     if (!internalReferenceToken)
       throw new Error('Reference does not match one created');
-    const tokenData = await verifyToken(internalReferenceToken);
+    const tokenData = await authService.verifyToken(internalReferenceToken);
     // check if amount received matchs expected
-    // @ts-ignore
-    const isValid = await validatePayment(id, tokenData.amount, tx_ref);
+
+    const isValid = await flutterwaveService.validatePayment(
+      id, // @ts-ignore
+      tokenData.amount,
+      tx_ref
+    );
     if (!isValid) throw new Error('Invalid transaction');
 
     // @ts-ignore

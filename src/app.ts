@@ -12,6 +12,7 @@ import {
   miscRoute,
   savingsRoute,
   transactionRoute,
+  securityRoute,
 } from './routes';
 import handleError from './middleware/error';
 import registerQueues from './start/queues';
@@ -38,13 +39,16 @@ app.use('/api/v1/savings', savingsRoute);
 app.use('/api/v1/card', cardRoute);
 app.use('/api/v1/transactions', transactionRoute);
 app.use('/api/v1/email', emailRoute);
+app.use('/api/v1/security', securityRoute);
 app.use('/api/v1', miscRoute);
 
 app.use(handleError);
 
 // wildcard
 app.use('*', (req, res) => {
-  res.redirect('https://documenter.getpostman.com/view/10688183/UVsEUoTN');
+  res.redirect(
+    'https://www.postman.com/detunjisamuel/workspace/shared/request/24386779-b5b27cb2-ec66-48c0-b81f-7a2119c5cd6c'
+  );
 });
 
 export default app;

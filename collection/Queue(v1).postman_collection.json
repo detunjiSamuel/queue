@@ -1096,10 +1096,6 @@
 			]
 		},
 		{
-			"name": "Savings",
-			"item": []
-		},
-		{
 			"name": "Cards",
 			"item": [
 				{
@@ -1938,7 +1934,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"amount\" : \"100\"\n}",
+							"raw": "{\n    \"amount\" : \"9000\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2088,6 +2084,170 @@
 							"path": [
 								"n",
 								"flutterwave-webhook"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Security",
+			"item": [
+				{
+					"name": "Setup two-factor",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{api_base}}/security/2fa",
+							"host": [
+								"{{api_base}}"
+							],
+							"path": [
+								"security",
+								"2fa"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "verify two-factor",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\" : \"12345\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_base}}/security/2fa/verify",
+							"host": [
+								"{{api_base}}"
+							],
+							"path": [
+								"security",
+								"2fa",
+								"verify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get two-factor",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_base}}/security/2fa",
+							"host": [
+								"{{api_base}}"
+							],
+							"path": [
+								"security",
+								"2fa"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove two-factor",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{api_base}}/security/2fa",
+							"host": [
+								"{{api_base}}"
+							],
+							"path": [
+								"security",
+								"2fa"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{auth_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"old_password\" : \"test\",\n    \"new_password\" : \"test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_base}}/security/change-password",
+							"host": [
+								"{{api_base}}"
+							],
+							"path": [
+								"security",
+								"change-password"
 							]
 						}
 					},

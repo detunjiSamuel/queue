@@ -1,14 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import dayjs from 'dayjs';
-
-import Savings from '../models/savings.model';
-import User from '../models/user.model';
-import Card from '../models/card.model';
-import HttpError from '../utils/error';
 
 import * as savingsService from '../services/savings.service';
 
-//   "amount", "frequency", "start_date", "end_date", "card"
 export const createSavingPlan = async (
   req: Request,
   res: Response,
@@ -20,7 +13,7 @@ export const createSavingPlan = async (
     req.body;
 
   try {
-    const plan = await savingsService.createSavingPlan({
+    const data = await savingsService.createSavingPlan({
       user,
       amount,
       frequency,
@@ -30,11 +23,11 @@ export const createSavingPlan = async (
       isAutosave,
     });
     return res.status(201).json({
-      msg: 'Plan creation successgful 👍',
-      plan,
+      status: 'success',
+      message: 'Plan creation successgful 👍',
+      data,
     });
   } catch (e) {
-    console.log(e.message);
     next(e);
   }
 };
@@ -50,7 +43,7 @@ export const editSavingPlan = async (
     const { amount, frequency, end_date, card, active } = req.body;
     const { id } = req.params;
 
-    await savingsService.editSavingPlan({
+    const data = await savingsService.editSavingPlan({
       amount,
       frequency,
       end_date,
@@ -60,10 +53,11 @@ export const editSavingPlan = async (
       user,
     });
     return res.status(200).json({
-      msg: 'Edit successfull',
+      status: 'success',
+      message: 'Edit successful 👍',
+      data,
     });
   } catch (e) {
-    console.log(e.message);
     next(e);
   }
 };
@@ -78,6 +72,7 @@ export const getSavingsPlan = async (
     const savings = await savingsService.getSavingsPlan({ user });
     return res.status(200).json({
       status: 'success',
+      message: null,
       data: savings,
     });
   } catch (e) {
@@ -94,10 +89,12 @@ export const withdrawSavingsPlan = async (
     const { user } = req.body;
     const { id } = req.params;
 
-    await savingsService.withdrawSavingsPlan({ user, id });
+    const data = await savingsService.withdrawSavingsPlan({ user, id });
 
     return res.status(200).json({
-      msg: 'savings Withdrawal successful',
+      status: 'success',
+      message: 'savings Withdrawal successful',
+      data,
     });
   } catch (e) {
     next(e);
@@ -113,16 +110,17 @@ export const fundSavingsPlan = async (
     const { user } = res.locals;
     const { amount } = req.body;
     const { id } = req.params;
-    await savingsService.fundSavingsPlan({
+    const data = await savingsService.fundSavingsPlan({
       user,
       amount,
       id,
     });
     return res.status(200).json({
-      msg: 'Transafer from wallet to plan complete',
+      status: 'success',
+      message: 'Transfer from wallet to plan complete',
+      data,
     });
   } catch (e) {
-    console.log(e.meessage);
     next(e);
   }
 };

@@ -14,7 +14,7 @@ const { flutterwave } = config;
 const cache = new RedisClient();
 const flw = new Flutterwave(flutterwave.public, flutterwave.private);
 
-export const chargeCard = async (user, amount, id) => {
+export const chargeCard = async ({ user, amount, id }) => {
   const chargeQueue = getQueue('charge_card');
   const emailQueue = getQueue('sendEmail');
 
@@ -61,19 +61,19 @@ export const getCard = async (user) => {
   throw new HttpError(404, 'No card is attached to this user');
 };
 
-export const removeCard = async (user, cardId) => {
+export const removeCard = async ({ user, card_id }) => {
   const ownsCard = await Card.findOne({
     user: user.id,
-    _id: cardId,
+    _id: card_id,
   });
   if (!ownsCard) throw new HttpError(400, 'This Card does not belong to you');
   await Card.deleteOne({
-    _id: cardId,
+    _id: card_id,
   });
 };
 
-export const validateCardOtp = async (otp, transactionReference) => {
-  const paymentToken = await cache.get(`opt-${transactionReference}`);
+export const validateCardOtp = async (otp, trx_ref) => {
+  const paymentToken = await cache.get(`opt-${trx_ref}`);
   if (!paymentToken)
     throw new HttpError(401, 'Invalid payment reference passed');
   const tokenData = await verifyToken(paymentToken);
@@ -82,7 +82,7 @@ export const validateCardOtp = async (otp, transactionReference) => {
     // @ts-ignore
     flw_ref: tokenData.flw_ref,
   });
-  await cache.delete(`opt-${transactionReference}`);
+  await cache.delete(`opt-${trx_ref}`);
   if (validate.message === 'Charge validated') return true;
 };
 
@@ -114,8 +114,6 @@ export const addCard = async ({
   });
 
   const response = await flw.Charge.card(payload);
-
-  console.log(response);
 
   if (response.status === 'error' || response.status.includes('fail'))
     throw new HttpError(401, 'This card cannot be accepted');
